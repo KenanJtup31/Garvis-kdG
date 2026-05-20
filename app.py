@@ -19,7 +19,7 @@ CREATOR_NAME = "Kənan Əlizadə (KDG)"
 CREATOR_INFO = "7 may 2011-ci ildə İsmayıllıda doğulub. Süni intellekt və nanotexnologiya üzrə mütəxəssisdir."
 
 # --- 4. API AÇARI (Bura yeni açarını qoy) ---
-API_KEY = "BURA_YENİ_API_AÇARINI_YAZ"
+API_KEY = "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"
 
 # --- 5. BAŞLIQ ---
 st.markdown(f"""
