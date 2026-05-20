@@ -1,10 +1,8 @@
 import streamlit as st
-import time
 from groq import Groq
-from streamlit_mic_recorder import mic_recorder
 from pypdf import PdfReader
 
-# 1. Təhlükəsiz Açar (Heç vaxt KeyError verməyəcək)
+# 1. Konfiqurasiya
 try:
     api_key = st.secrets["GROQ_API_KEY"]
 except:
@@ -12,28 +10,30 @@ except:
 
 client = Groq(api_key=api_key)
 
-# 2. Dizayn
 st.set_page_config(page_title="Langur AI", page_icon="🇦🇿")
 st.markdown("""
 <style>
     .stApp { background: #000000; color: white; }
-    .stChatMessage { border-radius: 20px; background: #1c1c1e; }
+    .footer { text-align: center; color: #8e8e93; font-size: 14px; margin-top: 50px; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🇦🇿 Langur AI Pro")
+# 2. Kənanın məlumatları (Langurun beyninə yerləşdiririk)
+kenan_info = """
+Kənan Əlizadə (KDG) haqqında məlumat:
+- Doğum tarixi: 7 may 2011
+- Doğulduğu yer: İsmayıllı rayonu
+- Əsas maraq dairələri: Süni intellekt, nanotexnologiya və yeni texnologiyalar.
+"""
 
-# 3. Məntiq
+# 3. Yaddaş və İnterfeys
 if "messages" not in st.session_state: 
-    st.session_state.messages = [{"role": "system", "content": "Sənin adın Langur-dur. Səni Kənan Əlizadə (KDG) yaradıb."}]
+    st.session_state.messages = [
+        {"role": "system", "content": f"Sənin adın Langur-dur. Səni Kənan Əlizadə yaradıb. Bu məlumatları yadda saxla və soruşulanda istifadə et: {kenan_info}"}
+    ]
 
-# Fayl yükləmə
-uploaded_file = st.file_uploader("Sənəd yüklə (PDF):", type=["pdf"])
-if uploaded_file:
-    reader = PdfReader(uploaded_file)
-    text = "".join([page.extract_text() for page in reader.pages])
-    st.session_state.messages.append({"role": "system", "content": f"Sənəd məzmunu: {text[:2000]}"})
-    st.success("Sənəd oxundu!")
+st.title("🇦🇿 Langur AI")
+st.markdown("<p style='text-align: center;'>KDG - Kənan Əlizadənin süni intellekt layihəsi</p>", unsafe_allow_html=True)
 
 # Çat
 for m in st.session_state.messages:
@@ -52,4 +52,6 @@ if sual := st.chat_input("Langura bir şey soruş..."):
         cavab = response.choices[0].message.content
         st.session_state.messages.append({"role": "assistant", "content": cavab})
         st.markdown(cavab)
-            
+
+# 4. Footer (Developed by)
+st.markdown("<div class='footer'>Developed by Kənan Əlizadə | KDG</div>", unsafe_allow_html=True)
