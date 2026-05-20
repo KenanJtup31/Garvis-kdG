@@ -1,14 +1,15 @@
-# Bu funksiyanı app.py-ə əlavə et
 import base64
+from groq import Groq
+
+# API açarını burada təyin edirik
+client = Groq(api_key="BURA_API_AÇARINI_YAZ")
 
 def analyze_image_with_vision(image_path):
-    # Şəkli kodlaşdırırıq ki, AI başa düşsün
     with open(image_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
-    # Vision modeli ilə analizi göndəririk
     response = client.chat.completions.create(
-        model="llama-3.2-90b-vision-preview", # Vision qabiliyyətli model
+        model="llama-3.2-90b-vision-preview",
         messages=[
             {
                 "role": "user",
@@ -20,4 +21,4 @@ def analyze_image_with_vision(image_path):
         ]
     )
     return response.choices[0].message.content
-  
+    
