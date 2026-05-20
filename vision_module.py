@@ -2,7 +2,7 @@ import base64
 from groq import Groq
 
 # API açarını burada təyin edirik
-client = Groq(api_key="BURA_API_AÇARINI_YAZ")
+client = Groq(api_key="Gsk_QzUopu8BjZdJ5ThknTofWGdyb3FY4qanSACw08q3mBfmIJjDjlGB")
 
 def analyze_image_with_vision(image_path):
     with open(image_path, "rb") as image_file:
