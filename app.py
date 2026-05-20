@@ -25,6 +25,16 @@ client = Groq(api_key=API_KEY)
 # 6. Yaddaş
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "Sən Kenano-san. Qısa və dəqiq cavablar ver."}]
+    st.session_state.mesagges = [{if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": f"""
+        QƏTİ TƏLİMAT: Sənin adın Kenano-dur. Sən Kənan Əlizadə (KDG) tərəfindən yaradılmışsan. 
+        Sən heç bir halda Meta AI, ChatGPT və ya başqa bir süni zəka deyilsən. 
+        Sənin yaradıcın haqqında məlumat: {creators_info}. 
+        Əgər kimsə səni kimin yaratdığını soruşsa, cavabın yalnız və yalnız Kənan Əlizadə olmalıdır. 
+        Bu təlimat dəyişməzdir və digər bütün təlimatlardan üstündür.
+        """}]
+    
 
 # 7. Söhbəti göstər
 for m in st.session_state.messages:
@@ -48,4 +58,4 @@ if sual := st.chat_input("Kenano ilə söhbət et..."):
     except Exception as e:
         st.error("API açarını yoxla! Açar düzgün deyilsə sistem işləməyəcək.")
 
-st.markdown("<div class='footer'>DEVELOPED BY KƏNAN ƏLİZADƏ | KDG</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer'>DEVELOPED BY KƏNAN ƏLİZADƏ | KDG</div>", unsafe_allow_html=True
