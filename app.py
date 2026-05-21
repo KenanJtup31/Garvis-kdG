@@ -6,7 +6,7 @@ from groq import Groq
 st.set_page_config(page_title="Kenano AI | Master Core", layout="centered")
 wikipedia.set_lang("az")
 
-# 2. Dizayn
+# 2. CSS Dizayn
 st.markdown("""
 <style>
     .stApp { background: #000; color: #fff; }
@@ -39,23 +39,24 @@ if prompt := st.chat_input("Komandanı daxil et, Kənan..."):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # AĞILLI MƏNTİQ
-    low_prompt = prompt.lower()
-    
-    # Əgər salamlaşmadırsa, birbaşa cavab ver
-    if any(x in low_prompt for x in ["salam", "necəsən"]):
-        if "salam" in low_prompt: cavab = "Salam, Kənan! Sənə necə kömək edə bilərəm?"
-        else: cavab = "Əladayam, Kənan! Yeni tapşırıqlarını gözləyirəm."
-    else:
-        # Əks halda Groq-dan istifadə et
+    # Cavab mexanizmi
+    try:
+        # Wikipedia-da axtar
+        search_results = wikipedia.search(prompt)
+        if search_results:
+            cavab = wikipedia.summary(search_results[0], sentences=2)
+        else:
+            raise Exception("Wikipedia-da tapılmadı")
+    except:
+        # Wikipedia-da yoxdursa, Groq-a soruş
         try:
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="llama3-8b-8192",
             )
             cavab = chat_completion.choices[0].message.content
-        except Exception as e:
-            cavab = "Kenano: Üzr istəyirəm, bu mövzuda məlumatı düzgün emal edə bilmədim."
+        except:
+            cavab = "Kenano: Üzr istəyirəm, bu mövzuda cavab verə bilmədim."
 
     with st.chat_message("assistant"):
         st.markdown(cavab)
