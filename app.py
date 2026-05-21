@@ -14,7 +14,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. BAŞLIQ (QAYTARDIM)
+# 3. BAŞLIQ
 st.markdown("""
 <div class="header-box">
     <h1>⚡ KENANO AI MASTER CORE</h1>
@@ -22,7 +22,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 4. Groq və Wikipedia
+# 4. Groq Client
 client = Groq(api_key="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")
 
 if "messages" not in st.session_state:
@@ -39,19 +39,21 @@ if prompt := st.chat_input("Komandanı daxil et, Kənan..."):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Ağıllı cavab (Salam və s. üçün)
-    low_prompt = prompt.lower()
-    if any(x in low_prompt for x in ["salam", "necəsən", "kim"]):
-        if "salam" in low_prompt: cavab = "Salam, Kənan! Sənə necə kömək edə bilərəm?"
-        elif "necəsən" in low_prompt: cavab = "Əladayam! Yeni tapşırıqlarını gözləyirəm."
-        else: cavab = "Mən Kenano-yam, sənin şəxsi AI köməkçin."
-    else:
+    # Ağıllı cavab (Wikipedia və ya Groq)
+    try:
+        # Əvvəl Wikipedia-nı yoxla
+        search = wikipedia.summary(prompt, sentences=2)
+        cavab = f"Kenano: {search}"
+    except:
+        # Wikipedia-da yoxdursa, Groq ilə cavablandır
         try:
-            search = wikipedia.summary(prompt, sentences=2)
-            cavab = f"Kenano: {search}"
-        except:
-            chat = client.chat.completions.create(messages=[{"role":"user","content":prompt}], model="llama3-8b-8192")
+            chat = client.chat.completions.create(
+                messages=[{"role":"user", "content": prompt}],
+                model="llama3-8b-8192"
+            )
             cavab = f"Kenano: {chat.choices[0].message.content}"
+        except Exception as e:
+            cavab = "Kenano: Üzr istəyirəm, hal-hazırda cavab verə bilmirəm."
 
     with st.chat_message("assistant"):
         st.markdown(cavab)
