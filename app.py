@@ -2,68 +2,48 @@ import streamlit as st
 import wikipedia
 from groq import Groq
 
-# --- 1. SİSTEM KONFİQURASİYASI ---
-st.set_page_config(page_title="Kenano AI | Master Core", page_icon="⚡", layout="centered")
+# 1. Konfiqurasiya
+st.set_page_config(page_title="Kenano AI | Master Core", layout="centered")
 wikipedia.set_lang("az")
 
-# --- 2. CSS DİZAYN ---
-st.markdown("""
-<style>
-    .stApp { background: #000000; color: #f5f5f5; }
-    .header-box { text-align: center; padding: 25px; border: 2px solid #FFD700; border-radius: 20px; background: #0a0a0a; margin-bottom: 20px; }
-</style>
-""", unsafe_allow_html=True)
+# 2. CSS
+st.markdown("<style>.stApp { background: #000; color: #fff; }</style>", unsafe_allow_html=True)
 
-# --- 3. YARADICI MƏLUMATLARI ---
-CREATOR_NAME = "Kənan Əlizadə (KDG)"
-CREATOR_INFO = "7 may 2011-ci ildə İsmayıllıda doğulub. Süni intellekt və nanotexnologiya üzrə mütəxəssisdir."
+# 3. Başlıq
+st.markdown("<h1 style='text-align: center;'>⚡ KENANO AI MASTER CORE</h1>", unsafe_allow_html=True)
 
-# --- 4. API AÇARI ---
-API_KEY = "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"
-client = Groq(api_key=API_KEY)
-
-# --- 5. BAŞLIQ ---
-st.markdown(f"""
-<div class="header-box">
-    <h1>⚡ KENANO AI MASTER CORE</h1>
-    <p>Developed by <b>{CREATOR_NAME}</b></p>
-</div>
-""", unsafe_allow_html=True)
-
-# --- 6. SİSTEMİN ŞƏXSİYYƏTİ ---
-SYSTEM_PROMPT = f"Sənin adın Kenano-dur. Yaradıcın {CREATOR_NAME}-dir. Sən qısa və dəqiq cavab verən süni intellektsən."
+# 4. Groq Client
+client = Groq(api_key="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")
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    st.session_state.messages = []
 
-# --- 7. SÖHBƏT EKRANI ---
-for m in st.session_state.messages:
-    if m["role"] != "system":
-        with st.chat_message(m["role"]):
-            st.markdown(m["content"])
+# 5. Söhbət Tarixçəsi
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# --- 8. YAZI YAZMA YERİ (ƏN AŞAĞIDA) ---
-st.markdown("---")
-st.subheader("⌨️ Komanda Paneli")
-user_input = st.chat_input("Komandanı daxil et, Kənan...")
-
-if user_input:
-    # Ekranda göstər
+# 6. YAZI YERİ (Ən aşağıda)
+if prompt := st.chat_input("Komandanı daxil et, Kənan..."):
+    # İstifadəçi mesajı
     with st.chat_message("user"):
-        st.markdown(user_input)
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    
-    # Wikipedia axtarışı və Groq cavabı
-    try:
-        search_results = wikipedia.search(user_input)
-        if search_results:
-            ozet = wikipedia.summary(search_results[0], sentences=2)
-            cavab = f"Kenan, {ozet}"
-        else:
-            cavab = "Bu mövzuda məlumat tapa bilmədim."
-    except:
-        cavab = "Kenano: Məlumatı tapmaqda çətinlik çəkirəm."
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
+    # Ağıllı cavab mexanizmi (Wikipedia + Groq)
+    try:
+        # Wikipedia-dan məlumat axtar
+        search = wikipedia.summary(prompt, sentences=2)
+        cavab = f"Wikipedia-dan tapdığım məlumata görə: {search}"
+    except:
+        # Wikipedia tapa bilməzsə Groq-a müraciət et
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama3-8b-8192",
+        )
+        cavab = chat_completion.choices[0].message.content
+
+    # Cavabı göstər
     with st.chat_message("assistant"):
         st.markdown(cavab)
     st.session_state.messages.append({"role": "assistant", "content": cavab})
