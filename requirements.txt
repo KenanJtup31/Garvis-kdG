@@ -1,4 +1,6 @@
 streamlit
-groq
-streamlit-mic-recorder
-pypdf
+streamlit-audiorecorder
+gTTS
+SpeechRecognition
+pydub
+
