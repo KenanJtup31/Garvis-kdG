@@ -67,5 +67,8 @@ if user_input:
             st.warning("Məlumat tapılmadı.")
     except:
         st.error("Xəta baş verdi.")
-        
+       # YAZI YAZMA YERİ (Ən sona qoyduğuna əmin ol):
+st.markdown("---") 
+user_input = st.text_input("Komandanı daxil et, Kənan...")
+if user_input: 
         
