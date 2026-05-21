@@ -1,8 +1,3 @@
-import streamlit as st
-from audiorecorder import audiorecorder
-from gtts import gTTS
-import speech_recognition as sr
-import wikipediafrom audiorecorder import audiorecorder
 from gtts import gTTS
 import speech_recognition as sr
 import streamlit as st
@@ -58,57 +53,3 @@ for m in st.session_state.messages:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
         
-
-# Wikipedia dilini təyin et
-wikipedia.set_lang("az")
-
-st.title("⚡ KENANO AI MASTER CORE")
-st.write("Developed by Kənan Əlizadə (KDG)")
-
-# 1. SƏSLİ MODULU YUXARI QOYDUQ (Daha sürətli əlçatanlıq üçün)
-st.subheader("🎤 Kenano Ağıllı Səs Modu")
-audio = audiorecorder("🎤 Səslə Danış", "Dayandır")
-
-if audio:
-    audio.export("sesim.wav", format="wav")
-    r = sr.Recognizer()
-    with sr.AudioFile("sesim.wav") as source:
-        audio_data = r.record(source)
-        try:
-            sual = r.recognize_google(audio_data, language="az-AZ")
-            st.write(f"**Sən dedin:** {sual}")
-            
-            # Sosial salamlaşma
-            if any(word in sual.lower() for word in ["salam", "necəsən"]):
-                cavab = "Merhaba Kenan, iyiyim. Seni dinliyorum."
-            else:
-                # Wikipedia axtarışını daha yumşaq etdik (səhv tanısa belə düzəldir)
-                search_results = wikipedia.search(sual)
-                if search_results:
-                    ozet = wikipedia.summary(search_results[0], sentences=2)
-                    cavab = f"Kenan, {ozet}"
-                else:
-                    cavab = "Bu mövzuda məlumat tapa bilmədim."
-            
-            st.write(f"**Kenano:** {cavab}")
-            tts = gTTS(text=cavab, lang='tr')
-            tts.save("cavab.mp3")
-            st.audio("cavab.mp3", format="audio/mp3")
-        except:
-            st.error("Səs tam anlaşılmadı, lütfən yenidən və aydın danış.")
-
-st.markdown("---")
-
-# 2. YAZI YERİNİ AŞAĞI QOYDUQ (Sənin istədiyin kimi)
-st.subheader("⌨️ Komanda Paneli")
-user_input = st.text_input("Komandanı daxil et, Kənan...")
-if user_input:
-    try:
-        search_results = wikipedia.search(user_input)
-        if search_results:
-            ozet = wikipedia.summary(search_results[0], sentences=2)
-            st.success(f"**Kenano:** {ozet}")
-        else:
-            st.warning("Məlumat tapılmadı.")
-    except:
-        st.error("Xəta baş verdi.")
