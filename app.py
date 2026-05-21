@@ -1,12 +1,10 @@
 import streamlit as st
-import wikipedia
 from groq import Groq
 
 # 1. Konfiqurasiya
 st.set_page_config(page_title="Kenano AI | Master Core", layout="centered")
-wikipedia.set_lang("az")
 
-# 2. CSS Dizayn
+# 2. CSS - Daha yaxşı dizayn
 st.markdown("""
 <style>
     .stApp { background: #000; color: #fff; }
@@ -22,7 +20,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 4. Groq Client
+# 4. Groq Client (API açarınla)
 client = Groq(api_key="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")
 
 if "messages" not in st.session_state:
@@ -39,24 +37,24 @@ if prompt := st.chat_input("Komandanı daxil et, Kənan..."):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Cavab mexanizmi
-    try:
-        # Wikipedia-da axtar
-        search_results = wikipedia.search(prompt)
-        if search_results:
-            cavab = wikipedia.summary(search_results[0], sentences=2)
-        else:
-            raise Exception("Wikipedia-da tapılmadı")
-    except:
-        # Wikipedia-da yoxdursa, Groq-a soruş
+    # AĞILLI MƏNTİQ
+    low_prompt = prompt.lower()
+    
+    # Sosial cavablar (Xəta verməsin deyə)
+    if any(x in low_prompt for x in ["salam", "necəsən", "kimdir", "yaradıb"]):
+        if "salam" in low_prompt: cavab = "Salam, Kənan! Necəsən? Sənə necə kömək edə bilərəm?"
+        elif "necəsən" in low_prompt: cavab = "Əladayam, Kənan! Yeni komandalarını gözləyirəm."
+        else: cavab = "Mən Kənan Əlizadə tərəfindən yaradılmış Master Core-am. Sənin şəxsi köməkçinəm."
+    else:
+        # Groq ilə geniş məlumat alırıq
         try:
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="llama3-8b-8192",
             )
             cavab = chat_completion.choices[0].message.content
-        except:
-            cavab = "Kenano: Üzr istəyirəm, bu mövzuda cavab verə bilmədim."
+        except Exception as e:
+            cavab = "Kenano: Üzr istəyirəm, bu mövzuda məlumatı emal edə bilmədim."
 
     with st.chat_message("assistant"):
         st.markdown(cavab)
