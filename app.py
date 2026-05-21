@@ -1,3 +1,6 @@
+from audiorecorder import audiorecorder
+from gtts import gTTS
+import speech_recognition as sr
 import streamlit as st
 from groq import Groq
 
@@ -50,6 +53,27 @@ for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
+            # Səslə danışma modulu
+audio = audiorecorder("🎤 Səslə Danış", "Dayandır")
+
+if len(audio) > 0:
+    audio.export("sesim.wav", format="wav")
+    r = sr.Recognizer()
+    with sr.AudioFile("sesim.wav") as source:
+        audio_data = r.record(source)
+        try:
+            sual = r.recognize_google(audio_data, language="az-AZ")
+            st.write(f"**Sən dedin:** {sual}")
+
+            # Cavabın "Kenan" olaraq formalaşdırılması
+            cavab = f"Merhaba Kenan, '{sual}' dediniz. Seni dinliyorum."
+
+            tts = gTTS(text=cavab, lang='tr')
+            tts.save("cavab.mp3")
+            st.audio("cavab.mp3", format="audio/mp3")
+        except:
+            st.error("Səs tanınmadı.")
+            
 
 # --- 10. SÖHBƏT MƏNTİQİ ---
 if sual := st.chat_input("Komandanı daxil et, Kənan..."):
