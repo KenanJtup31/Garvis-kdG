@@ -52,8 +52,8 @@ for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
-            # --- YAZI YAZMA YERİ (Bunu faylın ən sonuna qoy) ---
-st.markdown("---") # Səs modulu ilə ayırıcı xətt
+    
+st.markdown("---")
 st.subheader("⌨️ Komanda Paneli")
 user_input = st.text_input("Komandanı daxil et, Kənan...")
 
