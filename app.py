@@ -52,4 +52,20 @@ for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
+            # --- YAZI YAZMA YERİ (Bunu faylın ən sonuna qoy) ---
+st.markdown("---") # Səs modulu ilə ayırıcı xətt
+st.subheader("⌨️ Komanda Paneli")
+user_input = st.text_input("Komandanı daxil et, Kənan...")
+
+if user_input:
+    try:
+        search_results = wikipedia.search(user_input)
+        if search_results:
+            ozet = wikipedia.summary(search_results[0], sentences=2)
+            st.success(f"**Kenano:** {ozet}")
+        else:
+            st.warning("Məlumat tapılmadı.")
+    except:
+        st.error("Xəta baş verdi.")
+        
         
