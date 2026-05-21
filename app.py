@@ -53,48 +53,46 @@ for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
-            # --- KENANO MASTER CORE INTELLIGENCE BLOCK ---
-import wikipedia
-from googlesearch import search
-from audiorecorder import audiorecorder
-from gtts import gTTS
-import speech_recognition as sr
+            # --- MASTER CORE INTELLIGENCE BLOCK (Bunu app.py-ın sonuna əlavə et) ---
 
-wikipedia.set_lang("az")
+# 1. Yazı ilə komanda vermək üçün yer
+user_input = st.text_input("Komandanı daxil et, Kənan...")
+if user_input:
+    try:
+        if any(word in user_input.lower() for word in ["salam", "necəsən"]):
+            st.write("**Kenano:** Merhaba Kenan, iyiyim. Sənə necə kömək edə bilərəm?")
+        else:
+            ozet = wikipedia.summary(user_input, sentences=2)
+            st.success(f"**Kenano:** {ozet}")
+    except:
+        st.write("Kenano: Bu mövzuda məlumat tapa bilmədim.")
 
 st.markdown("---")
-st.subheader("🎤 Kenano Ağıllı Səs Modu")
 
-# Səs yazma düyməsi
+# 2. Səslə danışmaq üçün Master Core
+st.subheader("🎤 Kenano Ağıllı Səs Modu")
 audio = audiorecorder("🎤 Səslə Danış", "Dayandır")
 
 if audio:
     audio.export("sesim.wav", format="wav")
     r = sr.Recognizer()
-    
     with sr.AudioFile("sesim.wav") as source:
         audio_data = r.record(source)
         try:
             sual = r.recognize_google(audio_data, language="az-AZ")
             st.write(f"**Sən dedin:** {sual}")
             
-            # Siyasət və ya cari hadisədirsə Google axtarışı, yoxsa Wikipedia
-            if "siyasət" in sual.lower() or "xeber" in sual.lower():
-                st.write("Kenano xəbərləri araşdırır...")
-                link = next(search(sual, num=1, stop=1, pause=2))
-                cavab = f"Kenan, bu mövzu ilə bağlı ən son məlumatı buradan tapa bilərsən: {link}"
+            # Sosial salamlaşma və Wikipedia məntiqi
+            if any(word in sual.lower() for word in ["salam", "necəsən", "əleyküm"]):
+                cavab = "Merhaba Kenan, iyiyim, teşekkür ederim."
             else:
-                st.write("Kenano Wikipedia-nı yoxlayır...")
                 ozet = wikipedia.summary(sual, sentences=2)
                 cavab = f"Kenan, {ozet}"
             
             st.write(f"**Kenano:** {cavab}")
-            
-            # Cavabı səsləndir
             tts = gTTS(text=cavab, lang='tr')
             tts.save("cavab.mp3")
             st.audio("cavab.mp3", format="audio/mp3")
-            
-        except Exception as e:
+        except:
             st.error("Üzr istəyirəm, bu mövzuda məlumat tapa bilmədim.")
-    
+            
