@@ -5,16 +5,25 @@ from groq import Groq
 # 1. Konfiqurasiya
 st.set_page_config(page_title="Kenano AI | Master Core", layout="centered")
 wikipedia.set_lang("az")
-
-# 2. CSS - Yazı yerini sabit saxlamaq üçün
+# 2. CSS - Yazı yerini və stili tənzimləmək üçün
 st.markdown("""
 <style>
     .stApp { background: #000; color: #fff; }
-    .stChatInput { position: fixed; bottom: 0; }
+    /* Yazı yerinin çərçivəsini qızılı rəngdə və səliqəli etdik */
+    .stChatInput textarea {
+        border: 2px solid #FFD700 !important;
+        border-radius: 15px !important;
+        background-color: #1a1a1a !important;
+        color: white !important;
+    }
+    /* Söhbət balonlarını tənzimləyirik */
+    [data-testid="stChatMessage"] {
+        background-color: #0a0a0a;
+        border-radius: 10px;
+        padding: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
-
-st.markdown("<h1 style='text-align: center;'>⚡ KENANO AI MASTER CORE</h1>", unsafe_allow_html=True)
 
 # 3. Groq Client
 client = Groq(api_key="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")
