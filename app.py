@@ -6,42 +6,51 @@ from groq import Groq
 st.set_page_config(page_title="Kenano AI | Master Core", layout="centered")
 wikipedia.set_lang("az")
 
-# 2. CSS
-st.markdown("<style>.stApp { background: #000; color: #fff; }</style>", unsafe_allow_html=True)
+# 2. CSS - Yazı yerini sabit saxlamaq üçün
+st.markdown("""
+<style>
+    .stApp { background: #000; color: #fff; }
+    .stChatInput { position: fixed; bottom: 0; }
+</style>
+""", unsafe_allow_html=True)
 
-# 3. Başlıq
 st.markdown("<h1 style='text-align: center;'>⚡ KENANO AI MASTER CORE</h1>", unsafe_allow_html=True)
 
-# 4. Groq Client
+# 3. Groq Client
 client = Groq(api_key="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")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 5. Söhbət Tarixçəsi
+# 4. Söhbət Tarixçəsi
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 6. YAZI YERİ (Ən aşağıda)
+# 5. YAZI YERİ (Ən aşağıda)
 if prompt := st.chat_input("Komandanı daxil et, Kənan..."):
     # İstifadəçi mesajı
     with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Ağıllı cavab mexanizmi (Wikipedia + Groq)
-    try:
-        # Wikipedia-dan məlumat axtar
-        search = wikipedia.summary(prompt, sentences=2)
-        cavab = f"Wikipedia-dan tapdığım məlumata görə: {search}"
-    except:
-        # Wikipedia tapa bilməzsə Groq-a müraciət et
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama3-8b-8192",
-        )
-        cavab = chat_completion.choices[0].message.content
+    # AĞILLI MƏNTİQ (Bura şərəfsizcəsinə dəqiqdir)
+    low_prompt = prompt.lower()
+    
+    if any(x in low_prompt for x in ["salam", "necəsən", "kim", "yaradıb"]):
+        # Sosial cavablar
+        if "salam" in low_prompt: cavab = "Salam, Kənan! Necəsən? Sənə necə kömək edə bilərəm?"
+        elif "necəsən" in low_prompt: cavab = "Əladayam, Kənan! Yeni komandalarını gözləyirəm."
+        elif "kim" in low_prompt: cavab = "Məni Kənan Əlizadə (KDG) yaradıb, mən onun Master Core-uyam!"
+        else: cavab = "Mən Kenano-yam, sənin şəxsi AI köməkçin."
+    else:
+        # Wikipedia və ya Groq
+        try:
+            search = wikipedia.summary(prompt, sentences=2)
+            cavab = f"Kenano: {search}"
+        except:
+            chat = client.chat.completions.create(messages=[{"role":"user","content":prompt}], model="llama3-8b-8192")
+            cavab = f"Kenano: {chat.choices[0].message.content}"
 
     # Cavabı göstər
     with st.chat_message("assistant"):
