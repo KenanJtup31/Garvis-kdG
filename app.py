@@ -53,45 +53,48 @@ for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
-            # Səslə danışma modulu
+            # --- KENANO MASTER CORE INTELLIGENCE BLOCK ---
+import wikipedia
+from googlesearch import search
+from audiorecorder import audiorecorder
+from gtts import gTTS
+import speech_recognition as sr
+
+wikipedia.set_lang("az")
+
+st.markdown("---")
+st.subheader("🎤 Kenano Ağıllı Səs Modu")
+
+# Səs yazma düyməsi
 audio = audiorecorder("🎤 Səslə Danış", "Dayandır")
 
-if len(audio) > 0:
+if audio:
     audio.export("sesim.wav", format="wav")
     r = sr.Recognizer()
+    
     with sr.AudioFile("sesim.wav") as source:
         audio_data = r.record(source)
         try:
             sual = r.recognize_google(audio_data, language="az-AZ")
             st.write(f"**Sən dedin:** {sual}")
-
-            # Cavabın "Kenan" olaraq formalaşdırılması
-            cavab = f"Merhaba Kenan, '{sual}' dediniz. Seni dinliyorum."
-
+            
+            # Siyasət və ya cari hadisədirsə Google axtarışı, yoxsa Wikipedia
+            if "siyasət" in sual.lower() or "xeber" in sual.lower():
+                st.write("Kenano xəbərləri araşdırır...")
+                link = next(search(sual, num=1, stop=1, pause=2))
+                cavab = f"Kenan, bu mövzu ilə bağlı ən son məlumatı buradan tapa bilərsən: {link}"
+            else:
+                st.write("Kenano Wikipedia-nı yoxlayır...")
+                ozet = wikipedia.summary(sual, sentences=2)
+                cavab = f"Kenan, {ozet}"
+            
+            st.write(f"**Kenano:** {cavab}")
+            
+            # Cavabı səsləndir
             tts = gTTS(text=cavab, lang='tr')
             tts.save("cavab.mp3")
             st.audio("cavab.mp3", format="audio/mp3")
-        except:
-            st.error("Səs tanınmadı.")
             
-
-# --- 10. SÖHBƏT MƏNTİQİ ---
-if sual := st.chat_input("Komandanı daxil et, Kənan..."):
-    st.session_state.messages.append({"role": "user", "content": sual})
-    with st.chat_message("user"):
-        st.markdown(sual)
+        except Exception as e:
+            st.error("Üzr istəyirəm, bu mövzuda məlumat tapa bilmədim.")
     
-    try:
-        with st.chat_message("assistant", avatar="⚡"):
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=st.session_state.messages
-            )
-            cavab = response.choices[0].message.content
-            st.session_state.messages.append({"role": "assistant", "content": cavab})
-            st.markdown(cavab)
-    except Exception as e:
-        st.error("Sistem xətası: API açarını yoxla və ya yenidən cəhd et.")
-
-# --- 11. FOOTER ---
-st.markdown(f"<div class='footer'>KENANO AI SYSTEM v3.0 | DEVELOPED BY {CREATOR_NAME.upper()}</div>", unsafe_allow_html=True)
