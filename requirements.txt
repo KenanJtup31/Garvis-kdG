@@ -3,5 +3,3 @@ streamlit-audiorecorder
 gTTS
 SpeechRecognition
 pydub
-wikipedia
-googlesearch-python
