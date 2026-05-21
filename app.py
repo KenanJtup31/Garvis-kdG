@@ -9,21 +9,13 @@ wikipedia.set_lang("az")
 st.markdown("""
 <style>
     .stApp { background: #000; color: #fff; }
-    /* Yazı yerinin çərçivəsini qızılı rəngdə və səliqəli etdik */
-    .stChatInput textarea {
-        border: 2px solid #FFD700 !important;
-        border-radius: 15px !important;
-        background-color: #1a1a1a !important;
-        color: white !important;
-    }
-    /* Söhbət balonlarını tənzimləyirik */
-    [data-testid="stChatMessage"] {
-        background-color: #0a0a0a;
-        border-radius: 10px;
-        padding: 10px;
+    .stChatInput { 
+        max-width: 900px; 
+        margin: auto; 
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 # 3. Groq Client
 client = Groq(api_key="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")
