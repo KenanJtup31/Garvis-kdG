@@ -36,7 +36,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 3. API AÇARI (Bura yeni açarını qoy) ---
-API_KEY = "BURA_YENİ_API_AÇARINI_YAZ"
+API_KEY = "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"
 
 # --- 4. BAŞLIQ (STARK HQ) ---
 st.markdown("""
