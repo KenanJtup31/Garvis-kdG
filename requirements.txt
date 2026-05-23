@@ -3,5 +3,4 @@ streamlit-audiorecorder
 gTTS
 wikipedia
 groq
-openai
 pillow
