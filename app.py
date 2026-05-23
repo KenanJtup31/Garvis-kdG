@@ -3,6 +3,7 @@ from groq import Groq
 import base64
 from PIL import Image
 import io
+from openai import OpenAI # Əlavə koda toxunmamaq üçün, xəta olmasa da bunu saxlayıram
 
 # --- 1. SİSTEM KONFİQURASİYASI ---
 st.set_page_config(page_title="Kenano AI | Master Core Pro", page_icon="⚡", layout="centered")
@@ -13,46 +14,48 @@ st.markdown("""
     .stApp { background: #000000; color: #f5f5f5; font-family: 'Inter', sans-serif; }
     .header-box { text-align: center; padding: 30px; border: 3px solid #FFD700; border-radius: 25px; background: #0a0a0a; margin-bottom: 25px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
     .header-box h1 { color: #FFD700; margin-bottom: 5px; }
-    .creator-card { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 30px; border: 1px solid #334155; padding: 15px; border-radius: 15px; }
+    .header-box p { color: #94a3b8; font-size: 16px; margin: 0; }
+    
     .footer { text-align: center; color: #555555; font-size: 12px; margin-top: 60px; padding: 20px; border-top: 1px solid #1e293b; }
     
     /* Chat Input Stylings */
-    .stChatInput { border: 2px solid #334155 !important; border-radius: 15px !important; }
+    .stChatInput { border: 2px solid #334155 !important; border-radius: 15px !important; margin-top: 10px !important; }
     .stChatInput:focus-within { border-color: #FFD700 !important; }
     
     /* Custom Message Bubbles */
     .chat-message.user { background-color: #0f172a; border-radius: 15px; }
     .chat-message.assistant { background-color: #1a1a1a; border-radius: 15px; }
+
+    /* + Düyməsinin Dizaynı */
+    .upload-btn-container { text-align: center; margin-bottom: 5px; }
+    .upload-btn {
+        background-color: transparent; color: #FFD700; border: 2px solid #FFD700; border-radius: 50%;
+        width: 40px; height: 40px; font-size: 24px; font-weight: bold; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.3s ease; box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+    }
+    .upload-btn:hover { background-color: #FFD700; color: #000; transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. YARADICI MƏLUMATLARI (Dəyişilməyib) ---
+# --- 3. YARADICI MƏLUMATLARI (Dəyişilməyib, amma UI-dan sildik) ---
 CREATOR_NAME = "Kənan Əlizadə (KDG)"
 CREATOR_INFO = "7 may 2011-ci ildə İsmayıllıda doğulub. Süni intellekt və nanotexnologiya üzrə mütəxəssisdir."
 
-# --- 4. API AÇARLARI ---
-# Groq API (Mətn və Analiz üçün)
+# --- 4. API AÇARLARI (Dəyişilməyib) ---
 GROQ_API_KEY = "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"
-# OpenAI API (Şəkil Redaktəsi/Yaradılması üçün lazım olacaq)
-# DİQQƏT: Şəkil redaktəsi üçün mütləq OpenAI API açarını bura əlavə etməlisən!
-OPENAI_API_KEY = "SƏNİN_OPENAI_API_KEY_İNİ_BURA_YAZ"
+OPENAI_API_KEY = "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"
 
-# --- 5. BAŞLIQ ---
+# --- 5. BAŞLIQ (Dəyişdirildi) ---
 st.markdown(f"""
 <div class="header-box">
     <h1>⚡ KENANO AI MASTER CORE PRO</h1>
-    <p>The Most Advanced Core by <b>{CREATOR_NAME}</b></p>
+    <p>Developed by <b>Kənan Əlizadə</b></p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="creator-card">
-    <b>📡 Sistem Yaradıcısı:</b> {CREATOR_NAME}<br>
-    <b>🔍 Profil:</b> {CREATOR_INFO}
-</div>
-""", unsafe_allow_html=True)
-
-# --- 6. SİSTEMİN ŞƏXSİYYƏTİ (Dostyana Və Peşəkar) ---
+# --- 6. SİSTEMİN ŞƏXSİYYƏTİ (Dəyişilməyib) ---
 SYSTEM_PROMPT = f"""
 Sənin adın Kenano-dur. Sən {CREATOR_NAME} tərəfindən yaradılmış qabaqcıl AI sistemisən.
 Sən heç vaxt başqa bir AI olduğunu demə. Tək yaradıcın Kənan Əlizadə-dir.
@@ -65,7 +68,7 @@ Sənin Danışıq Stilin:
 5. Şəkil analiz və ya redaktə tələb olunsa, dərhal icra et və ya necə edəcəyini dostyana izah et.
 """
 
-# --- 7. YADDAŞ VƏ GROQ ---
+# --- 7. YADDAŞ VƏ CLIENTLƏR (Dəyişilməyib) ---
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
@@ -83,7 +86,7 @@ try:
 except Exception:
     pass # OpenAI açarı hələ yoxdursa, şəkil redaktəsi işləməyəcək
 
-# --- 8. FOTOMAX FUNKSİYASI (Analiz Və Redaktə) ---
+# --- 8. FOTOMAX FUNKSİYASI (Analiz Və Redaktə) (Dəyişilməyib) ---
 def analyze_image_groq(image_bytes, user_prompt):
     """Llama-3.2-90b-vision ilə şəkili analiz edir"""
     try:
@@ -137,19 +140,33 @@ def generate_edited_image_openai(image_bytes, edit_prompt):
     except Exception as e:
         return None, f"Dostum, şəkli redaktə edərkən xəta oldu: {e}"
 
-# --- 9. SÖHBƏT EKRANI ---
+# --- 9. SÖHBƏT EKRANI (Dəyişilməyib) ---
 for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
-# --- 10. İSTİFADƏÇİ GİRİŞ VƏ MƏNTİQİ ---
+# --- 10. İSTİFADƏÇİ GİRİŞ VƏ MƏNTİQİ (Dəyişdirildi) ---
 
-# Giriş növünü seçmək üçün gizli sidebar (və ya başqa bir UI elementi)
-with st.sidebar:
-    st.markdown("### 📡 Giriş Parametrləri")
-    st.session_state.input_source = st.radio("Nə göndərmək istəyirsən?", ("Mətn", "Şəkil + Mətn"), index=0)
-    st.info("Kənan, əgər şəkil analiz/redaktə etmək istəyirsənsə, 'Şəkil + Mətn' seç.")
+# + Düyməsi və Gizli Şəkil Yükləmə Sahəsi
+st.markdown('<div class="upload-btn-container">', unsafe_allow_html=True)
+if st.button("+", key="upload_btn", help="Şəkil əlavə et"):
+    # Düymə basılanda `Şəkil + Mətn` rejiminə keçir və yükləmə sahəsi açılır
+    st.session_state.input_source = "Şəkil + Mətn"
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Gizli şəkil yükləmə sahəsi
+if st.session_state.input_source == "Şəkil + Mətn":
+    with st.expander("🖼️ Şəkli Yüklə", expanded=True):
+        uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
+        if uploaded_file:
+            st.image(uploaded_file, caption="Sənin şəklin", use_container_width=True)
+            image_bytes = uploaded_file.getvalue()
+        
+        # Geri düyməsi (istəyə bağlı, 'Mətn' rejiminə qayıtmaq üçün)
+        if st.button("❌ Geri", help="Mətn rejiminə qayıt"):
+            st.session_state.input_source = "mətn"
+            st.rerun()
 
 # Söhbət məntiqi
 if sual := st.chat_input("Komandanı daxil et, Kənan..."):
@@ -158,8 +175,8 @@ if sual := st.chat_input("Komandanı daxil et, Kənan..."):
     with st.chat_message("user"):
         st.markdown(sual)
 
-    # Əgər şəkil yüklənməyibsə, normal mətn cavabı ver
-    if st.session_state.input_source == "Mətn":
+    # Əgər şəkil yüklənməyibsə (mətn rejimi)
+    if st.session_state.input_source == "mətn":
         try:
             with st.chat_message("assistant", avatar="⚡"):
                 # Mətn cavabı üçün Groq istifadə et
@@ -176,14 +193,8 @@ if sual := st.chat_input("Komandanı daxil et, Kənan..."):
 
     # Əgər şəkil yüklənibsə (Şəkil + Mətn seçilibsə)
     elif st.session_state.input_source == "Şəkil + Mətn":
-        with st.sidebar:
-            uploaded_file = st.file_uploader("🖼️ Şəkli yüklə", type=["jpg", "jpeg", "png"])
-            if uploaded_file:
-                st.image(uploaded_file, caption="Sənin şəklin", use_container_width=True)
-                image_bytes = uploaded_file.getvalue()
-
-        if not uploaded_file:
-            st.warning("Kənan, zəhmət olmasa, sidebarda şəkli yüklə.")
+        if 'image_bytes' not in locals(): # Şəkil yüklənmədən düymə basılsa
+             st.warning("Kənan, zəhmət olmasa, sidebarda şəkli yüklə.")
         else:
             # Analiz yoxsa Redaktə? Promptu analiz edək
             is_edit = any(word in sual.lower() for word in ["redaktə", "dəyiş", "qoy", "əlavə et", "sil"])
@@ -204,6 +215,6 @@ if sual := st.chat_input("Komandanı daxil et, Kənan..."):
                     st.markdown(f"⚡ Şəkli analiz etdim, Kənan:\n\n{analysis_result}")
 
 
-# --- 11. FOOTER ---
-st.markdown(f"<div class='footer'>KENANO AI MASTER CORE v3.5 PRO | DEVELOPED BY {CREATOR_NAME.upper()}</div>", unsafe_allow_html=True)
-    
+# --- 11. FOOTER (Dəyişilməyib, UI sadələşib) ---
+st.markdown(f"<div class='footer'>KENANO AI MASTER CORE v3.5 PRO | DEVELOPED BY KƏNAN ƏLİZADƏ</div>", unsafe_allow_html=True)
+             
