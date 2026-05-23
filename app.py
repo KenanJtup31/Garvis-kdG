@@ -3,12 +3,12 @@ from groq import Groq
 import base64
 from PIL import Image
 import io
-from openai import OpenAI
+import os
 
 # --- 1. SİSTEM KONFİQURASİYASI ---
 st.set_page_config(page_title="Kenano AI | Master Core Pro", page_icon="⚡", layout="centered")
 
-# --- 2. CSS DİZAYN ---
+# --- 2. CSS DİZAYN (Düzəldilib) ---
 st.markdown("""
 <style>
     .stApp { background: #000000; color: #f5f5f5; font-family: 'Inter', sans-serif; }
@@ -19,43 +19,34 @@ st.markdown("""
     .stChatInput { border: 2px solid #334155 !important; border-radius: 15px !important; margin-top: 10px !important; }
     .stChatInput:focus-within { border-color: #FFD700 !important; }
     .upload-btn-container { text-align: center; margin-bottom: 5px; }
-    .upload-btn { background-color: transparent; color: #FFD700; border: 2px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 </style>
-""", unsafe_html=True)
+""", unsafe_allow_html=True)
 
-# --- 3. YARADICI MƏLUMATLARI ---
-CREATOR_NAME = "Kənan Əlizadə (KDG)"
-
-# --- 4. API AÇARLARI ---
+# --- 3. API AÇARLARI ---
 GROQ_API_KEY = "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"
-OPENAI_API_KEY = "SƏNİN_OPENAI_API_KEY_İNİ_BURA_YAZ"
 
-# --- 5. BAŞLIQ ---
-st.markdown(f"""
+# --- 4. BAŞLIQ ---
+st.markdown("""
 <div class="header-box">
     <h1>⚡ KENANO AI MASTER CORE PRO</h1>
     <p>Developed by <b>Kənan Əlizadə</b></p>
 </div>
-""", unsafe_html=True)
+""", unsafe_allow_html=True)
 
-# --- 6. SİSTEMİN ŞƏXSİYYƏTİ ---
-SYSTEM_PROMPT = "Sənin adın Kenano-dur. Kənan Əlizadə tərəfindən yaradılmısan. Onunla dost kimi danış. Hərf səhvi etmə. Yerində ciddi, yerində səmimi ol."
+# --- 5. SİSTEMİN ŞƏXSİYYƏTİ ---
+SYSTEM_PROMPT = "Sənin adın Kenano-dur. Kənan Əlizadə tərəfindən yaradılmısan. Onunla dost kimi danış. Hərf səhvi etmə."
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-if "input_source" not in st.session_state:
-    st.session_state.input_source = "mətn"
-
 groq_client = Groq(api_key=GROQ_API_KEY)
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# --- 7. FOTOMAX FUNKSİYASI (MODEL YENİLƏNİB) ---
+# --- 6. FOTOMAX FUNKSİYASI ---
 def analyze_image_groq(image_bytes, user_prompt):
     try:
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
         response = groq_client.chat.completions.create(
-            model="llama-3.2-11b-vision-preview", # YENİ MODEL
+            model="llama-3.2-11b-vision-preview",
             messages=[{"role": "user", "content": [{"type": "text", "text": user_prompt}, {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}]}],
             stream=False
         )
@@ -63,50 +54,33 @@ def analyze_image_groq(image_bytes, user_prompt):
     except Exception as e:
         return f"Dostum, şəkli analiz edərkən xəta oldu: {e}"
 
-def generate_edited_image_openai(image_bytes, edit_prompt):
-    try:
-        image = Image.open(io.BytesIO(image_bytes))
-        if image.format != "PNG":
-            buf = io.BytesIO(); image.save(buf, format="PNG"); image_bytes_png = buf.getvalue()
-        else: image_bytes_png = image_bytes
-        response = openai_client.images.create_edit(image=image_bytes_png, prompt=edit_prompt, n=1, size="1024x1024", response_format="url")
-        return response.data[0].url, None
-    except Exception as e:
-        return None, f"Dostum, şəkli redaktə edərkən xəta oldu: {e}"
-
-# --- 8. SÖHBƏT EKRANI ---
+# --- 7. SÖHBƏT EKRANI ---
 for m in st.session_state.messages:
     if m["role"] != "system":
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
-# --- 9. GİRİŞ VƏ MƏNTİQ ---
-st.markdown('<div class="upload-btn-container">', unsafe_html=True)
-if st.button("+", key="upload_btn"): st.session_state.input_source = "Şəkil + Mətn"
-st.markdown('</div>', unsafe_html=True)
+# --- 8. GİRİŞ VƏ MƏNTİQ ---
+if "input_source" not in st.session_state: st.session_state.input_source = "mətn"
 
-if st.session_state.input_source == "Şəkil + Mətn":
-    with st.expander("🖼️ Şəkli Yüklə", expanded=True):
-        uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
-        if uploaded_file:
-            image_bytes = uploaded_file.getvalue()
-            st.image(uploaded_file, use_container_width=True)
-        if st.button("❌ Geri"): st.session_state.input_source = "mətn"; st.rerun()
+if st.button("➕ Şəkil əlavə et"): st.session_state.input_source = "şəkil"
+if st.button("❌ Mətn rejimi"): st.session_state.input_source = "mətn"
+
+uploaded_file = None
+if st.session_state.input_source == "şəkil":
+    uploaded_file = st.file_uploader("Şəkli seç", type=["jpg", "jpeg", "png"])
 
 if sual := st.chat_input("Komandanı daxil et, Kənan..."):
     st.session_state.messages.append({"role": "user", "content": sual})
     with st.chat_message("user"): st.markdown(sual)
     
     with st.chat_message("assistant", avatar="⚡"):
-        if st.session_state.input_source == "Şəkil + Mətn" and 'image_bytes' in locals():
-            if any(word in sual.lower() for word in ["redaktə", "dəyiş", "qoy", "əlavə et", "sil"]):
-                url, error = generate_edited_image_openai(image_bytes, sual)
-                st.markdown(f"![Redaktə]({url})" if url else error)
-            else:
-                st.markdown(analyze_image_groq(image_bytes, sual))
+        if uploaded_file:
+            cavab = analyze_image_groq(uploaded_file.getvalue(), sual)
         else:
             response = groq_client.chat.completions.create(model="llama-3.3-70b-versatile", messages=st.session_state.messages)
-            st.markdown(response.choices[0].message.content)
-            st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
+            cavab = response.choices[0].message.content
+        st.markdown(cavab)
+        st.session_state.messages.append({"role": "assistant", "content": cavab})
 
-st.markdown(f"<div class='footer'>KENANO AI MASTER CORE | DEVELOPED BY KƏNAN ƏLİZADƏ</div>", unsafe_html=True)
+st.markdown("<div class='footer'>KENANO AI MASTER CORE | DEVELOPED BY KƏNAN ƏLİZADƏ</div>", unsafe_allow_html=True)
