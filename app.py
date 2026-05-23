@@ -9,11 +9,8 @@ st.set_page_config(page_title="KENANO AI | ANIMATED PRO", layout="wide")
 # --- 2. CSS ANIMASIYALAR VƏ STİLLƏR ---
 st.markdown("""
     <style>
-        /* Animasiya effekti */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .stChatMessage { animation: fadeIn 0.5s ease-out; }
-        
-        /* Yazı sahəsinin ölçüsü və aktivliyi */
         div[data-testid="stChatInput"] { 
             z-index: 999999 !important; 
             position: fixed; 
@@ -27,37 +24,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. DİL VƏ MƏTN ---
+# --- 3. DİL VƏ MƏTN LÜĞƏTİ ---
 def get_ui(lang):
-    return {
-        "Azərbaycan": {"title": "⚡ KENANO AI", "input": "Mesajını yaz və göndər..."},
-        "English": {"title": "⚡ KENANO AI", "input": "Type your message..."}
-    }.get(lang, {"title": "⚡ KENANO AI", "input": "Type..."})
+    data = {
+        "Azərbaycan": {"title": "⚡ KENANO AI", "input": "Mesajını yaz və göndər...", "temp": "Temperatur"},
+        "English": {"title": "⚡ KENANO AI", "input": "Type your message...", "temp": "Temperature"},
+        "Русский": {"title": "⚡ KENANO AI", "input": "Введите сообщение...", "temp": "Температура"},
+        "Türkçe": {"title": "⚡ KENANO AI", "input": "Mesajınızı yazın...", "temp": "Sıcaklık"},
+        "Deutsch": {"title": "⚡ KENANO AI", "input": "Nachricht eingeben...", "temp": "Temperatur"},
+        "Français": {"title": "⚡ KENANO AI", "input": "Entrez votre message...", "temp": "Température"}
+    }
+    return data.get(lang, data["English"])
 
-lang = st.sidebar.selectbox("Language", ["Azərbaycan", "English"])
-ui = get_ui(lang)
+# --- 4. SIDEBAR - AYARLAR ---
+with st.sidebar:
+    lang = st.selectbox("Language / Dil", ["Azərbaycan", "English", "Русский", "Türkçe", "Deutsch", "Français"])
+    ui = get_ui(lang)
+    temp = st.slider(ui['temp'], 0.0, 1.0, 0.7)
 
-# --- 4. API VƏ SESSİYA ---
+# --- 5. API VƏ SESSİYA ---
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 if "messages" not in st.session_state: st.session_state.messages = []
 
-# --- 5. HEADER ---
+# --- 6. HEADER ---
 st.markdown(f"<div class='header-box'><h1>{ui['title']}</h1><p>Developer: Kənan Əlizadə</p></div>", unsafe_allow_html=True)
 
-# --- 6. SÖHBƏT VƏ ANIMASİYALI GÖSTƏRİŞ ---
+# --- 7. SÖHBƏT VƏ ANIMASİYALI GÖSTƏRİŞ ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 if prompt := st.chat_input(ui['input']):
-    # İstifadəçi mesajı
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
     
-    # Assistant mesajı (Animasiya ilə)
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
@@ -67,6 +70,7 @@ if prompt := st.chat_input(ui['input']):
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 stream=True,
+                temperature=temp
             )
             for chunk in stream:
                 if chunk.choices[0].delta.content:
@@ -79,5 +83,5 @@ if prompt := st.chat_input(ui['input']):
             
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# --- 7. FOOTER ---
+# --- 8. FOOTER ---
 st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v12.0 | ANIMATED CORE</div>", unsafe_allow_html=True)
