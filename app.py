@@ -1,4 +1,4 @@
-İmport streamlit as st
+import streamlit as st
 from groq import Groq
 import base64
 from PIL import Image
@@ -21,7 +21,7 @@ st.markdown("""
     .upload-btn-container { text-align: center; margin-bottom: 5px; }
     .upload-btn { background-color: transparent; color: #FFD700; border: 2px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_html=True)
 
 # --- 3. YARADICI MƏLUMATLARI ---
 CREATOR_NAME = "Kənan Əlizadə (KDG)"
@@ -36,7 +36,7 @@ st.markdown(f"""
     <h1>⚡ KENANO AI MASTER CORE PRO</h1>
     <p>Developed by <b>Kənan Əlizadə</b></p>
 </div>
-""", unsafe_allow_html=True)
+""", unsafe_html=True)
 
 # --- 6. SİSTEMİN ŞƏXSİYYƏTİ ---
 SYSTEM_PROMPT = "Sənin adın Kenano-dur. Kənan Əlizadə tərəfindən yaradılmısan. Onunla dost kimi danış. Hərf səhvi etmə. Yerində ciddi, yerində səmimi ol."
@@ -81,9 +81,9 @@ for m in st.session_state.messages:
             st.markdown(m["content"])
 
 # --- 9. GİRİŞ VƏ MƏNTİQ ---
-st.markdown('<div class="upload-btn-container">', unsafe_allow_html=True)
+st.markdown('<div class="upload-btn-container">', unsafe_html=True)
 if st.button("+", key="upload_btn"): st.session_state.input_source = "Şəkil + Mətn"
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_html=True)
 
 if st.session_state.input_source == "Şəkil + Mətn":
     with st.expander("🖼️ Şəkli Yüklə", expanded=True):
@@ -109,5 +109,4 @@ if sual := st.chat_input("Komandanı daxil et, Kənan..."):
             st.markdown(response.choices[0].message.content)
             st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
-st.markdown(f"<div class='footer'>KENANO AI MASTER CORE | DEVELOPED BY KƏNAN ƏLİZADƏ</div>", unsafe_allow_html=True)
-Bu kodda dəyiş sadəcə onu
+st.markdown(f"<div class='footer'>KENANO AI MASTER CORE | DEVELOPED BY KƏNAN ƏLİZADƏ</div>", unsafe_html=True)
