@@ -1,11 +1,36 @@
 import streamlit as st
 from groq import Groq
+import sqlite3
 from datetime import datetime
 
 # --- 1. SİSTEM KONFİQURASİYASI ---
 st.set_page_config(page_title="KENANO AI | ULTIMATE PRO", layout="wide")
 
-# --- 2. CSS ANIMASIYALAR VƏ STİLLƏR ---
+# --- DATABASE TƏNZİMLƏMƏSİ ---
+def init_db():
+    conn = sqlite3.connect('chat_history.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS messages 
+                 (role TEXT, content TEXT, timestamp DATETIME)''')
+    conn.commit()
+    return conn
+
+def save_message(role, content):
+    conn = init_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO messages VALUES (?, ?, ?)", (role, content, datetime.now()))
+    conn.commit()
+    conn.close()
+
+def get_messages():
+    conn = init_db()
+    c = conn.cursor()
+    c.execute("SELECT role, content FROM messages")
+    data = c.fetchall()
+    conn.close()
+    return [{"role": r, "content": c} for r, c in data]
+
+# --- 2. CSS ANIMASIYALAR ---
 st.markdown("""
     <style>
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -15,55 +40,50 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. DİL VƏ MƏTN LÜĞƏTİ ---
+# --- 3. DİL VƏ MƏTN ---
 def get_ui(lang):
     data = {
         "Azərbaycan": {"title": "⚡ KENANO AI", "input": "Mesajını yaz...", "temp": "Temperatur", "feedback": "Rəy və Şikayət", "info": "Haqqımızda", "placeholder": "Bura yazın..."},
-        "English": {"title": "⚡ KENANO AI", "input": "Type your message...", "temp": "Temperature", "feedback": "Feedback", "info": "About", "placeholder": "Write here..."},
-        "Русский": {"title": "⚡ KENANO AI", "input": "Введите сообщение...", "temp": "Температура", "feedback": "Отзывы", "info": "О нас", "placeholder": "Пишите здесь..."},
-        "Türkçe": {"title": "⚡ KENANO AI", "input": "Mesajınızı yazın...", "temp": "Sıcaklık", "feedback": "Geri Bildirim", "info": "Hakkımızda", "placeholder": "Buraya yazın..."},
-        "Deutsch": {"title": "⚡ KENANO AI", "input": "Nachricht eingeben...", "temp": "Temperatur", "feedback": "Feedback", "info": "Über uns", "placeholder": "Hier schreiben..."},
-        "Français": {"title": "⚡ KENANO AI", "input": "Entrez votre message...", "temp": "Température", "feedback": "Commentaires", "info": "À propos", "placeholder": "Écrivez ici..."}
+        "English": {"title": "⚡ KENANO AI", "input": "Type your message...", "temp": "Temperature", "feedback": "Feedback", "info": "About", "placeholder": "Write here..."}
     }
     return data.get(lang, data["English"])
 
-# --- 4. SIDEBAR - AYARLAR VƏ FEEDBACK ---
+# --- 4. SIDEBAR ---
 with st.sidebar:
-    st.header("⚙️ Control Panel")
-    lang = st.selectbox("Language / Dil", ["Azərbaycan", "English", "Русский", "Türkçe", "Deutsch", "Français"])
+    lang = st.selectbox("Language / Dil", ["Azərbaycan", "English"])
     ui = get_ui(lang)
     temp = st.slider(ui['temp'], 0.0, 1.0, 0.7)
     
-    st.divider()
-    st.subheader(f"💬 {ui['feedback']}")
-    feedback = st.text_area(ui['placeholder'])
-    if st.button("Send Feedback"):
-        st.success("Təşəkkürlər! Rəyiniz qeyd olundu.")
-    
-    st.divider()
-    st.subheader(f"ℹ️ {ui['info']}")
-    st.info("Bu layihə Kənan Elızade tərəfindən yaradılmışdır. Mən onun ilk süni intellekt layihəsiyəm və gələcəkdə bir çox uğurlu layihələrdə istifadə olunacağam.")
+    if st.button("Sessiyanı Təmizlə (Reset)"):
+        conn = init_db()
+        conn.execute("DELETE FROM messages")
+        conn.commit()
+        conn.close()
+        st.rerun()
 
 # --- 5. API VƏ SESSİYA ---
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
-if "messages" not in st.session_state: 
-    st.session_state.messages = [{"role": "system", "content": "Sənin yaradıcın Kənan Elızade-dir. Sən onun ilk layihəsisən və gələcəkdə çoxlu layihələrdə istifadə olunacaqsan."}]
+# Yaddaşdan yüklə
+if "messages" not in st.session_state:
+    st.session_state.messages = get_messages()
 
 # --- 6. HEADER ---
 st.markdown(f"<div class='header-box'><h1>{ui['title']}</h1><p>Developed by Kenan Elızade</p></div>", unsafe_allow_html=True)
 
-# --- 7. SÖHBƏT VƏ ANIMASİYALI GÖSTƏRİŞ ---
+# --- 7. SÖHBƏT ---
 for message in st.session_state.messages:
-    if message["role"] != "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 if prompt := st.chat_input(ui['input']):
+    # İstifadəçi
     st.session_state.messages.append({"role": "user", "content": prompt})
+    save_message("user", prompt)
     with st.chat_message("user"): st.markdown(prompt)
     
+    # Assistant
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
@@ -82,8 +102,10 @@ if prompt := st.chat_input(ui['input']):
         except Exception as e:
             full_response = f"Xəta: {e}"
             message_placeholder.markdown(full_response)
+        
         st.session_state.messages.append({"role": "assistant", "content": full_response})
+        save_message("assistant", full_response)
 
 # --- 8. FOOTER ---
-st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v12.0 | DEVELOPED BY KENAN ELIZADE</div>", unsafe_allow_html=True)
-    
+st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v13.0 | DATABASE ENABLED</div>", unsafe_allow_html=True)
+        
