@@ -42,7 +42,7 @@ with st.sidebar:
     
     st.divider()
     st.subheader(f"ℹ️ {ui['info']}")
-    st.info("Bu layihə Kənan Elızade tərəfindən yaradılmışdır. Mən onun ilk süni intellekt layihəsiyəm və gələcəkdə bir çox uğurlu layihələrdə istifadə olunacağam.")
+    st.info("Bu layihə Kenan Elızade tərəfindən yaradılmışdır. Bu onun ilk süni intellekt layihəsidir və gələcəkdə bir çox layihələrdə istifadə ediləcək.")
 
 # --- 5. API VƏ SESSİYA ---
 GROQ_API_KEY = "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"
