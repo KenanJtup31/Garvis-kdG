@@ -22,14 +22,6 @@ def save_message(role, content):
     conn.commit()
     conn.close()
 
-def get_messages():
-    conn = init_db()
-    c = conn.cursor()
-    c.execute("SELECT role, content FROM messages")
-    data = c.fetchall()
-    conn.close()
-    return [{"role": r, "content": c} for r, c in data]
-
 # --- 2. CSS ANIMASIYALAR ---
 st.markdown("""
     <style>
@@ -40,7 +32,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. DİL VƏ MƏTN ---
+# --- 3. DİL VƏ MƏTN LÜĞƏTİ ---
 def get_ui(lang):
     data = {
         "Azərbaycan": {"title": "⚡ KENANO AI", "input": "Mesajını yaz...", "temp": "Temperatur", "feedback": "Rəy və Şikayət", "info": "Haqqımızda", "placeholder": "Bura yazın..."},
@@ -48,11 +40,21 @@ def get_ui(lang):
     }
     return data.get(lang, data["English"])
 
-# --- 4. SIDEBAR ---
+# --- 4. SIDEBAR - AYARLAR, FEEDBACK VƏ HAQQIMIZDA ---
 with st.sidebar:
     lang = st.selectbox("Language / Dil", ["Azərbaycan", "English"])
     ui = get_ui(lang)
     temp = st.slider(ui['temp'], 0.0, 1.0, 0.7)
+    
+    st.divider()
+    st.subheader(f"💬 {ui['feedback']}")
+    feedback = st.text_area(ui['placeholder'])
+    if st.button("Send Feedback"):
+        st.success("Təşəkkürlər!")
+    
+    st.divider()
+    st.subheader(f"ℹ️ {ui['info']}")
+    st.info("Mən Kənan Elızade tərəfindən yaradılmış ilk layihəyəm. Gələcəkdə bir çox layihələrdə istifadə olunacağam.")
     
     if st.button("Sessiyanı Təmizlə (Reset)"):
         conn = init_db()
@@ -65,32 +67,31 @@ with st.sidebar:
 GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
-# Yaddaşdan yüklə
-if "messages" not in st.session_state:
-    st.session_state.messages = get_messages()
-
 # --- 6. HEADER ---
 st.markdown(f"<div class='header-box'><h1>{ui['title']}</h1><p>Developed by Kenan Elızade</p></div>", unsafe_allow_html=True)
 
-# --- 7. SÖHBƏT ---
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# --- 7. SÖHBƏT VƏ TARİXCƏ ---
+conn = init_db()
+c = conn.cursor()
+c.execute("SELECT role, content FROM messages")
+history = c.fetchall()
+conn.close()
+
+for role, content in history:
+    with st.chat_message(role):
+        st.markdown(content)
 
 if prompt := st.chat_input(ui['input']):
-    # İstifadəçi
-    st.session_state.messages.append({"role": "user", "content": prompt})
     save_message("user", prompt)
     with st.chat_message("user"): st.markdown(prompt)
     
-    # Assistant
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
         try:
             stream = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                messages=[{"role": r, "content": c} for r, c in history] + [{"role": "user", "content": prompt}],
                 stream=True,
                 temperature=temp
             )
@@ -103,9 +104,8 @@ if prompt := st.chat_input(ui['input']):
             full_response = f"Xəta: {e}"
             message_placeholder.markdown(full_response)
         
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
         save_message("assistant", full_response)
 
 # --- 8. FOOTER ---
-st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v13.0 | DATABASE ENABLED</div>", unsafe_allow_html=True)
+st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v14.0 | FULL FEATURES ENABLED</div>", unsafe_allow_html=True)
         
