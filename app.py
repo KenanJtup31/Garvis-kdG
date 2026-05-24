@@ -3,7 +3,7 @@ from groq import Groq
 from datetime import datetime
 
 # --- 1. SİSTEM KONFİQURASİYASI ---
-st.set_page_config(page_title="KENANO AI | ULTIMATE PRO", layout="wide")
+st.set_page_config(page_title="KENANO AI | FIRST EDITION", layout="wide")
 
 # --- 2. CSS ANIMASIYALAR VƏ STİLLƏR ---
 st.markdown("""
