@@ -86,23 +86,4 @@ if prompt := st.chat_input(ui['input']):
 
 # --- 8. FOOTER ---
 st.markdown("<br><br><br><div style='text-align:center; color:gray;'>KENANO AI v12.0 | DEVELOPED BY KENAN ELIZADE</div>", unsafe_allow_html=True)
-            
-def send_email_feedback(feedback_text):
-    sender_email = "kelizade349@gmail.com"
-    app_password = "usjjdyqmjfykhfhj" # Boşluqsuz 16 simvol
-    receiver_email = "kelizade349@gmail.com"
-    
-    msg = MIMEText(f"Yeni Feedback:\n\n{feedback_text}")
-    msg['Subject'] = "KENANO AI - Yeni Feedback"
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender_email, app_password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-        return True
-    except Exception as e:
-        st.error(f"Xəta baş verdi: {e}")
-        return False
-
+        
