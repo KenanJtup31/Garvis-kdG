@@ -29,7 +29,7 @@ with st.sidebar:
     lang = st.selectbox("Language / Dil", ["Azərbaycan", "English"])
     ui = get_ui(lang)
     temp = st.slider(ui['temp'], 0.0, 1.0, 0.7)
-    
+    seriousness = st.selectbox("ciddilik / seriousness", ["Səmimi", "ciddi"])
     st.divider()
     st.subheader(f"ℹ️ {ui['info']}")
     st.info("Bu layihə Kənan Əlizadə tərəfindən yaradılmışdır. İlk süni intellekt layihəsidir.")
