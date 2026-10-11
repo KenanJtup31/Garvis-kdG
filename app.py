@@ -4,161 +4,153 @@ from datetime import datetime
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
-    page_title="KENANO AI | iOS Edition", 
-    page_icon="📱", 
+    page_title="KENANO AI", 
+    page_icon="💻", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. APPLE / İPHONE MİNİMALİST DİZAYN (CSS) ---
+# --- 2. TÜND (QARA) MİNİMALİST DİZAYN (CSS) ---
 st.markdown("""
     <style>
-        /* Ümumi səhifə fonu və Apple şriftləri */
+        /* Tünd fon və təmiz Apple şriftləri */
         .stApp {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0b0c;
+            color: #f5f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         }
         
-        /* Sidebar dizaynı - iOS Split View tərzi */
+        /* Sidebar tünd dizaynı */
         [data-testid="stSidebar"] {
-            background-color: #ffffff;
-            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            background-color: #141416;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        /* iPhone üslubunda minimalist kartlar (Glassmorphism & Soft Shadow) */
+        [data-testid="stSidebar"] * {
+            color: #f5f5f7 !important;
+        }
+        
+        /* Kart dizaynı */
         .ios-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
+            background: #1c1c1e;
             padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 20px;
         }
         
-        /* Başlıq üslubu */
+        /* Başlıqlar */
         .ios-title {
-            color: #1d1d1f;
-            font-weight: 700;
-            font-size: 28px;
-            letter-spacing: -0.5px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 26px;
             text-align: center;
+            letter-spacing: -0.5px;
             margin-bottom: 5px;
         }
         
         .ios-subtitle {
-            color: #86868b;
-            font-size: 15px;
+            color: #8e8e93;
+            font-size: 14px;
             text-align: center;
-            font-weight: 400;
             margin-bottom: 25px;
         }
         
-        /* Mesaj qutularının tənzimlənməsi */
+        /* Söhbət mesajları */
         .stChatMessage {
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            background-color: #1c1c1e;
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        /* Chat input sətri */
-        div[data-testid="stChatInput"] {
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            background: #ffffff;
-            border: 1px solid #d2d2d7;
+        /* Chat input */
+        div[data-testid="stChatInput"] input {
+            background-color: #1c1c1e !important;
+            color: #ffffff !important;
         }
         
-        /* Düymələr */
-        .stButton button {
-            border-radius: 12px;
-            font-weight: 600;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        
-        /* Footer hissəsi */
+        /* Footer */
         .ios-footer {
             text-align: center;
-            color: #86868b;
-            font-size: 13px;
+            color: #8e8e93;
+            font-size: 12px;
             margin-top: 40px;
             padding: 20px;
-            border-top: 1px solid rgba(0,0,0,0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. ÇOXDİLLİ LÜĞƏT (AZ, EN, RU) ---
+# --- 3. ÇOXDİLLİ LÜĞƏT (AZ, EN, RU - Emojisiz) ---
 translations = {
     "Azərbaycan": {
-        "title": "⚡ KENANO AI",
-        "subtitle": "Apple Tərzində Ağıllı Köməkçi və Tədqiqat Mərkəzi",
-        "sidebar_control": "⚙️ İdarəetmə Paneli",
-        "lang_label": "Dil Seçimi / Language",
+        "title": "KENANO AI",
+        "subtitle": "Süni İntellekt Sistemi",
+        "sidebar_control": "İdarəetmə Paneli",
+        "lang_label": "Dil Seçimi",
         "mode_label": "Rejim Seçin",
-        "modes": ["💬 Ağıllı Söhbət", "📝 Mətn Xülasəsi", "💻 Kod İzahçısı", "ℹ️ Layihə Haqqında"],
-        "temp_label": "Yaradıcılıq Səviyyəsi (Temperature)",
+        "modes": ["Söhbət", "Mətn Xülasəsi", "Kod Analizi", "Haqqında"],
+        "temp_label": "Yaradıcılıq Səviyyəsi",
         "tone_label": "Cavab Tonu",
-        "tones": ["Səmimi & Dost", "Ciddi & Akademik", "Kreativ & Maraqlı"],
-        "input_placeholder": "Mesajınızı buraya yazın...",
-        "creator_info": "Bu layihə istedadlı proqramçı Kənan Əlizadə tərəfindən müasir iOS standartlarına uyğun olaraq hazırlanmışdır.",
+        "tones": ["Səmimi", "Ciddi", "Kreativ"],
+        "input_placeholder": "Mesajınızı yazın...",
+        "creator_info": "Bu layihə Kənan Əlizadə tərəfindən hazırlanmışdır.",
         "summary_btn": "Xülasə Et",
-        "summary_input": "Xülasə olunacaq mətni daxil edin:",
-        "code_input": "İzah olunacaq kodu daxil edin:",
+        "summary_input": "Xülasə olunacaq mətn:",
+        "code_input": "İzah olunacaq kod:",
         "code_btn": "Kodu İzah Et"
     },
     "English": {
-        "title": "⚡ KENANO AI",
-        "subtitle": "Apple-Style Intelligent Assistant & Research Center",
-        "sidebar_control": "⚙️ Control Panel",
-        "lang_label": "Language Selection",
+        "title": "KENANO AI",
+        "subtitle": "Artificial Intelligence System",
+        "sidebar_control": "Control Panel",
+        "lang_label": "Language",
         "mode_label": "Select Mode",
-        "modes": ["💬 Smart Chat", "📝 Text Summarizer", "💻 Code Explainer", "ℹ️ About Project"],
-        "temp_label": "Creativity Level (Temperature)",
+        "modes": ["Chat", "Text Summary", "Code Analysis", "About"],
+        "temp_label": "Creativity Level",
         "tone_label": "Response Tone",
-        "tones": ["Friendly & Casual", "Serious & Academic", "Creative & Engaging"],
-        "input_placeholder": "Type your message here...",
-        "creator_info": "This project was created by talented programmer Kenan Alizade according to modern iOS standards.",
+        "tones": ["Friendly", "Serious", "Creative"],
+        "input_placeholder": "Type your message...",
+        "creator_info": "This project was created by Kenan Alizade.",
         "summary_btn": "Summarize",
-        "summary_input": "Enter text to summarize:",
-        "code_input": "Enter code to explain:",
+        "summary_input": "Text to summarize:",
+        "code_input": "Code to explain:",
         "code_btn": "Explain Code"
     },
     "Русский": {
-        "title": "⚡ KENANO AI",
-        "subtitle": "Умный помощник в стиле Apple и центр исследований",
-        "sidebar_control": "⚙️ Панель управления",
-        "lang_label": "Выбор языка",
+        "title": "KENANO AI",
+        "subtitle": "Система Искусственного Интеллекта",
+        "sidebar_control": "Панель управления",
+        "lang_label": "Язык",
         "mode_label": "Выберите режим",
-        "modes": ["💬 Умный чат", "📝 Резюме текста", "💻 Анализ кода", "ℹ️ О проекте"],
-        "temp_label": "Уровень творчества (Temperature)",
+        "modes": ["Чат", "Резюме текста", "Анализ кода", "О программе"],
+        "temp_label": "Уровень творчества",
         "tone_label": "Тон ответа",
-        "tones": ["Дружелюбный", "Серьезный и академичный", "Креативный"],
-        "input_placeholder": "Введите ваше сообщение...",
-        "creator_info": "Этот проект разработан талантливым программистом Кянаном Ализаде в соответствии с современными стандартами iOS.",
+        "tones": ["Дружелюбный", "Серьезный", "Креативный"],
+        "input_placeholder": "Введите сообщение...",
+        "creator_info": "Этот проект разработан Кянаном Ализаде.",
         "summary_btn": "Сделать резюме",
-        "summary_input": "Введите текст для резюме:",
-        "code_input": "Введите код для объяснения:",
+        "summary_input": "Текст для резюме:",
+        "code_input": "Код для анализа:",
         "code_btn": "Объяснить код"
     }
 }
 
-# --- 4. SIDEBAR (AYARLAR VƏ İDARƏETMƏ) ---
+# --- 4. SIDEBAR ---
 with st.sidebar:
-    st.markdown("###  KENANO AI OS")
-    lang_choice = st.selectbox("🌐 Language / Dil / Язык", ["Azərbaycan", "English", "Русский"])
+    st.markdown("### İdarəetmə")
+    lang_choice = st.selectbox("Dil / Language / Язык", ["Azərbaycan", "English", "Русский"])
     ui = translations[lang_choice]
     
     st.divider()
-    st.markdown(f"**{ui['sidebar_control']}**")
     app_mode = st.radio(ui['mode_label'], ui['modes'])
     
     temp = st.slider(ui['temp_label'], 0.0, 1.0, 0.7)
     selected_tone = st.selectbox(ui['tone_label'], ui['tones'])
     
     st.divider()
-    st.info(ui['creator_info'])
+    st.caption(ui['creator_info'])
 
 # --- 5. API BAĞLANTISI ---
 GROQ_API_KEY = "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"
@@ -166,23 +158,20 @@ GROQ_API_KEY = "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"
 try:
     client = Groq(api_key=GROQ_API_KEY)
 except Exception as e:
-    st.error(f"API Connection Error: {e}")
+    st.error(f"API Xətası: {e}")
 
-# Sessiya yaddaşı
 if "messages" not in st.session_state: 
     st.session_state.messages = [{
         "role": "system", 
-        "content": "Sənin adın KENANO AI-dır. Sənin yaradıcın və tərtibatçın Kənan Əlizadə-dir. Həmişə Apple məhsulları kimi zərif, təmiz, dəqiq və peşəkar cavablar ver. Kənan Əlizadənin istedadlı proqramçı olduğunu qürurla qeyd et."
+        "content": "Sənin adın KENANO AI-dır. Sənin yaradıcın Kənan Əlizadə-dir. Həmişə qısa, səliqəli, təmiz və peşəkar cavablar ver."
     }]
 
-# --- 6. ƏSAS EKRAN & REJİMLƏR ---
+# --- 6. ƏSAS EKRAN ---
 st.markdown(f"<div class='ios-title'>{ui['title']}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='ios-subtitle'>{ui['subtitle']}</div>", unsafe_allow_html=True)
 
-# Rejim 1: Ağıllı Söhbət (Smart Chat)
+# Rejim 1: Söhbət
 if app_mode == ui['modes'][0]:
-    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
-    
     for message in st.session_state.messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
@@ -209,69 +198,55 @@ if app_mode == ui['modes'][0]:
                         message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response)
             except Exception as e:
-                message_placeholder.markdown(f"❌ Xəta: {e}")
+                message_placeholder.markdown(f"Xəta: {e}")
                 
             st.session_state.messages.append({"role": "assistant", "content": full_response})
-            
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# Rejim 2: Mətn Xülasəsi (Text Summarizer)
+# Rejim 2: Xülasə
 elif app_mode == ui['modes'][1]:
-    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
-    st.subheader("📝 " + ui['modes'][1])
+    st.subheader(ui['modes'][1])
     text_to_summarize = st.text_area(ui['summary_input'], height=150)
     if st.button(ui['summary_btn'], use_container_width=True):
         if text_to_summarize:
-            with st.spinner("İşlənir..."):
-                response = client.chat.completions.create(
-                    model="openai/gpt-oss-20b",
-                    messages=[
-                        {"role": "system", "content": "Sən peşəkar mətn xülasəedicisən."},
-                        {"role": "user", "content": f"Bu mətni qısa və səliqəli şəkildə xülasə et: {text_to_summarize}"}
-                    ],
-                    temperature=0.3
-                )
-                st.success("Nəticə:")
-                st.write(response.choices[0].message.content)
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-20b",
+                messages=[
+                    {"role": "system", "content": "Sən mətn xülasəedicisən."},
+                    {"role": "user", "content": f"Bu mətni qısa xülasə et: {text_to_summarize}"}
+                ],
+                temperature=0.3
+            )
+            st.write(response.choices[0].message.content)
         else:
-            st.warning("Zəhmət olmasa mətn daxil edin.")
-    st.markdown('</div>', unsafe_allow_html=True)
+            st.warning("Mətn daxil edin.")
 
-# Rejim 3: Kod İzahçısı (Code Explainer)
+# Rejim 3: Kod Analizi
 elif app_mode == ui['modes'][2]:
-    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
-    st.subheader("💻 " + ui['modes'][2])
+    st.subheader(ui['modes'][2])
     code_snippet = st.text_area(ui['code_input'], height=150)
     if st.button(ui['code_btn'], use_container_width=True):
         if code_snippet:
-            with st.spinner("Kod təhlil edilir..."):
-                response = client.chat.completions.create(
-                    model="openai/gpt-oss-20b",
-                    messages=[
-                        {"role": "system", "content": "Sən təcrübəli proqramlaşdırma müəllimisən. Kodları səlis və başa düşülən şəkildə izah edirsən."},
-                        {"role": "user", "content": f"Bu kodu addım-addım izah et: \n\n{code_snippet}"}
-                    ],
-                    temperature=0.3
-                )
-                st.success("İzah:")
-                st.markdown(response.choices[0].message.content)
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-20b",
+                messages=[
+                    {"role": "system", "content": "Sən proqramlaşdırma üzrə mütəxəssissən."},
+                    {"role": "user", "content": f"Bu kodu izah et: \n\n{code_snippet}"}
+                ],
+                temperature=0.3
+            )
+            st.markdown(response.choices[0].message.content)
         else:
-            st.warning("Zəhmət olmasa kod daxil edin.")
-    st.markdown('</div>', unsafe_allow_html=True)
+            st.warning("Kod daxil edin.")
 
-# Rejim 4: Layihə Haqqında (About)
+# Rejim 4: Haqqında
 elif app_mode == ui['modes'][3]:
-    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
-    st.subheader("ℹ️ Layihə Haqqında")
+    st.subheader(ui['modes'][3])
     st.markdown("""
-    * **Layihə Adı:** KENANO AI
-    * **Tərtibatçı:** Kənan Əlizadə
-    * **Dizayn Konsepsiyası:** Apple Human Interface Guidelines (Minimalist, Zərif iOS Kartları)
-    * **Texnologiyalar:** Python, Streamlit, Groq Cloud API, LLaMA/GPT OSS arxitekturası.
-    * **Xüsusiyyətlər:** Çoxdilli dəstək (Azərbaycan, İngilis, Rus), Süni İntellekt Söhbəti, Sürətli Mətn Xülasəsi və Kod İzahı.
+    * Sistem: KENANO AI
+    * Yaradıcı: Kənan Əlizadə
+    * Dizayn: Minimalist Tünd Rejim (Dark Mode)
+    * Dəstəklənən Dillər: Azərbaycan, İngilis, Rus
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 7. FOOTER ---
-st.markdown("<div class='ios-footer'>KENANO AI v15.0 Pro | DESIGNED FOR EXCELLENCE BY KENAN ALIZADE</div>", unsafe_allow_html=True)
-    
+st.markdown("<div class='ios-footer'>KENANO AI | DEVELOPED BY KENAN ALIZADE</div>", unsafe_allow_html=True)
