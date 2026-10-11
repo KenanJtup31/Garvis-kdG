@@ -1,3 +1,4 @@
+
 import streamlit as st
 from groq import Groq
 from datetime import datetime
@@ -63,8 +64,9 @@ if prompt := st.chat_input(ui['input']):
         message_placeholder = st.empty()
         full_response = ""
         try:
+            # Model adı daha universal və stabil versiyaya dəyişdirildi:
             stream = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama3-70b-8192",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 stream=True,
                 temperature=temp
@@ -75,7 +77,7 @@ if prompt := st.chat_input(ui['input']):
                     message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
         except Exception as e:
-            message_placeholder.markdown(f"❌ Xəta: API Açarını yoxlayın və ya düzgün `gsk_...` açarı daxil edin. Detal: {e}")
+            message_placeholder.markdown(f"❌ Xəta: {e}")
             
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
