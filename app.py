@@ -35,9 +35,12 @@ with st.sidebar:
     st.info("Bu layihə Kənan Əlizadə tərəfindən yaradılmışdır. İlk süni intellekt layihəsidir.")
 
 # --- 5. API VƏ SESSİYA ---
-# BURAYA YENİ YARATDIĞIN AÇARI YAPIŞDIR (gsk_... ilə başlayan)
-GROQ_API_KEY = "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"
-client = Groq(api_key=GROQ_API_KEY)
+GROQ_API_KEY = "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" 
+
+try:
+    client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    st.error(f"API bağlantı xətası: {e}")
 
 if "messages" not in st.session_state: 
     st.session_state.messages = [{"role": "system", "content": "Sənin yaradıcın Kənan Əlizadə-dir."}]
@@ -53,7 +56,8 @@ for message in st.session_state.messages:
 
 if prompt := st.chat_input(ui['input']):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"): st.markdown(prompt)
+    with st.chat_message("user"): 
+        st.markdown(prompt)
     
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
@@ -71,7 +75,8 @@ if prompt := st.chat_input(ui['input']):
                     message_placeholder.markdown(full_response + "▌")
             message_placeholder.markdown(full_response)
         except Exception as e:
-            message_placeholder.markdown(f"Xəta: API Açarını yoxlayın. {e}")
+            message_placeholder.markdown(f"❌ Xəta: API Açarını yoxlayın və ya düzgün `gsk_...` açarı daxil edin. Detal: {e}")
+            
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 # --- 8. FOOTER ---
