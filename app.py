@@ -36,7 +36,7 @@ with st.sidebar:
 
 # --- 5. API VƏ SESSİYA ---
 # BURAYA YENİ YARATDIĞIN AÇARI YAPIŞDIR (gsk_... ilə başlayan)
-GROQ_API_KEY = "AQ.Ab8RN6I8BnUD6M8bUjhQRdwIVeo_37_6ntn4opcmZ-On8_b9Rw"
+GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 if "messages" not in st.session_state: 
