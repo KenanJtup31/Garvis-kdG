@@ -1,4 +1,3 @@
-
 import streamlit as st
 from groq import Groq
 from datetime import datetime
@@ -64,9 +63,9 @@ if prompt := st.chat_input(ui['input']):
         message_placeholder = st.empty()
         full_response = ""
         try:
-            # Model adı daha universal və stabil versiyaya dəyişdirildi:
+            # Aktiv və sürətli model istifadə olunur:
             stream = client.chat.completions.create(
-                model="llama3-70b-8192",
+                model="llama-3.1-8b-instant",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 stream=True,
                 temperature=temp
