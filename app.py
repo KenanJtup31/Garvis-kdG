@@ -63,9 +63,9 @@ if prompt := st.chat_input(ui['input']):
         message_placeholder = st.empty()
         full_response = ""
         try:
-            # Aktiv və sürətli model istifadə olunur:
+            # Tam aktiv model istifadə olunur:
             stream = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 stream=True,
                 temperature=temp
