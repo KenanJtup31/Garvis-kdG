@@ -10,10 +10,11 @@ from datetime import datetime
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
     page_title="KENANO AI", 
-    page_icon="⚡", 
+    page_icon="Logo.png", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
 
 # --- 2. PREMIUM CSS ANIMASIYALAR VƏ İOS DİZAYN ---
 st.markdown("""
