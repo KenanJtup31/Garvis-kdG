@@ -1,7 +1,6 @@
 # ==============================================================================
 # LAYIHƏ ADI: KENANO AI | ENTERPRISE EDITION
 # MÜƏLLİF VƏ TƏRTİBATÇI: KƏNAN ƏLİZADƏ
-# TƏSVİR: Müasir iOS üslublu, çoxdilli, tarixçə və animasiya dəstəkli AI sistemi
 # ==============================================================================
 
 import streamlit as st
@@ -11,7 +10,7 @@ import time
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
-    page_title="KENANO AI | PRO", 
+    page_title="KENANO AI", 
     page_icon="⚡", 
     layout="wide",
     initial_sidebar_state="expanded"
@@ -36,7 +35,7 @@ st.markdown("""
             color: #f5f5f7 !important;
         }
         
-        /* Mesajların Açılma Animasiyası (Fade In & Slide Up) */
+        /* Mesajların Açılma Animasiyası (Fade In) */
         @keyframes messageAppear {
             0% {
                 opacity: 0;
@@ -64,13 +63,13 @@ st.markdown("""
         }
         .modern-title {
             color: #ffffff;
-            font-size: 26px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: 1px;
             margin-bottom: 4px;
         }
         .modern-copyright {
-            color: #86868b;
+            color: #6e6e73;
             font-size: 11px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -144,17 +143,16 @@ try:
 except Exception as e:
     st.error(f"Kritik API Bağlantı Xətası: {e}")
 
-# Groq platformasının ən güclü və dəqiq ensiklopedik modeli
-PRIMARY_MODEL = "llama-3.3-70b-versatile"
+# Stabil və işlək model
+PRIMARY_MODEL = "openai/gpt-oss-20b"
 
-# --- 5. DİNAMİK BAŞLIQ GENERATORU (GEMİNİ / CHATGPT ÜSLUBU) ---
+# --- 5. DİNAMİK BAŞLIQ GENERATORU ---
 def generate_chat_title(first_message):
-    """İlk mesaja əsasən söhbətə avtomatik qısa və mənalı ad verir."""
     try:
         response = client.chat.completions.create(
             model=PRIMARY_MODEL,
             messages=[
-                {"role": "system", "content": "Verilən istifadəçi mesajına əsasən 2-4 sözdən ibarət qısa, konkret və mənalı başlıq adı yaz. Heç bir dırnaq işarəsi və ya izahat əlavə etmə."},
+                {"role": "system", "content": "Verilən mesaja əsasən 2-4 sözdən ibarət qısa başlıq yaz. Başqa heç nə yazma."},
                 {"role": "user", "content": first_message}
             ],
             temperature=0.3,
@@ -178,7 +176,6 @@ with st.sidebar:
     
     st.divider()
     
-    # Yeni Söhbət Düyməsi
     if st.button(ui['new_chat'], use_container_width=True):
         unique_name = f"Söhbət {len(st.session_state.chats) + 1}"
         st.session_state.chats[unique_name] = []
@@ -187,7 +184,6 @@ with st.sidebar:
         
     st.markdown(f"**{ui['history_title']}**")
     
-    # Tarixçə Siyahısı
     chat_names = list(st.session_state.chats.keys())
     if st.session_state.current_chat not in chat_names:
         st.session_state.current_chat = chat_names[0]
@@ -221,42 +217,33 @@ st.markdown(f"""
 
 st.markdown("<hr style='border: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 25px;'>", unsafe_allow_html=True)
 
-# Cari aktiv söhbətin mesajları
 current_messages = st.session_state.chats[st.session_state.current_chat]
 
-# AI SİSTEM TƏLİMATI (ENSİKLOPEDİK BAZA VƏ ŞƏXSİYYƏT)
 SYSTEM_INSTRUCTION = {
     "role": "system", 
     "content": (
-        "Sənin adın KENANO-dur. Sənin yaradıcın və tərtibatçın Kənan Əlizadədir. "
-        "Sən istənilən sahədə (tarix, elm, texnologiya, ədəbiyyat, riyaziyyat, proqramlaşdırma) "
-        "dərin ensiklopedik biliklərə malik peşəkar intellektual sistemsən. "
-        "Həmişə obyektiv, faktlara əsaslanan, dəqiq, səliqəli və ətraflı cavablar ver. "
-        "Heç vaxt məlumatları uydurma və ya səhv təqdim etmə. Suallara dərhal, peşəkar dildə cavab ver."
+        "Sənin adın KENANO-dur. Sənin yaradıcın Kənan Əlizadədir. "
+        "Sən yüksək biliklərə sahib, dəqiq və peşəkar intellektual sistemsən. "
+        "Həmişə obyektiv, dəqiq və ətraflı cavablar ver."
     )
 }
 
-# --- 9. REJİMLƏRİN İŞLƏNMƏSİ ---
-
-# Rejim 1: Ağıllı Söhbət (Smart Chat)
+# --- 9. REJİMLƏR ---
 if app_mode == ui['modes'][0]:
     if not current_messages:
         current_messages.append(SYSTEM_INSTRUCTION)
 
-    # Mövcud mesajların ekrana çapı
     for message in current_messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # İstifadəçi girişi
     if prompt := st.chat_input(ui['input_placeholder']):
         current_messages.append({"role": "user", "content": prompt})
         
         with st.chat_message("user"): 
             st.markdown(prompt)
         
-        # Asistan cavabı və axın (streaming) mexanizmi
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             full_response = ""
@@ -277,7 +264,6 @@ if app_mode == ui['modes'][0]:
                 
             current_messages.append({"role": "assistant", "content": full_response})
 
-        # İlk mesaj yazıldıqda söhbətə avtomatik peşəkar ad verilməsi
         user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
         if user_msg_count == 1:
             new_title = generate_chat_title(prompt)
@@ -285,60 +271,50 @@ if app_mode == ui['modes'][0]:
             del st.session_state.chats[st.session_state.current_chat]
             st.session_state.current_chat = new_title
 
-# Rejim 2: Mətn Xülasəsi (Text Summarizer)
 elif app_mode == ui['modes'][1]:
     st.subheader(ui['modes'][1])
     text_to_summarize = st.text_area("Xülasə olunacaq mətni daxil edin:", height=180)
     if st.button(ui['summary_btn'], use_container_width=True):
         if text_to_summarize:
-            with st.spinner("Mətn təhlil edilir..."):
-                try:
-                    response = client.chat.completions.create(
-                        model=PRIMARY_MODEL,
-                        messages=[
-                            {"role": "system", "content": "Sən peşəkar mətn analitiki və xülasəedicisisən. Verilmiş mətni əsas məqamları saxlamaqla qısa, səliqəli və strukturlaşdırılmış şəkildə xülasə et."},
-                            {"role": "user", "content": f"Zəhmət olmasa bu mətni xülasə et: {text_to_summarize}"}
-                        ],
-                        temperature=0.3
-                    )
-                    st.success("Xülasə Nəticəsi:")
-                    st.markdown(response.choices[0].message.content)
-                except Exception as e:
-                    st.error(f"Xəta: {e}")
+            with st.spinner("İşlənir..."):
+                response = client.chat.completions.create(
+                    model=PRIMARY_MODEL,
+                    messages=[
+                        {"role": "system", "content": "Sən mətn xülasəedicisisən."},
+                        {"role": "user", "content": f"Bu mətni qısa xülasə et: {text_to_summarize}"}
+                    ],
+                    temperature=0.3
+                )
+                st.success("Nəticə:")
+                st.markdown(response.choices[0].message.content)
         else:
-            st.warning("Zəhmət olmasa mətn daxil edin.")
+            st.warning("Mətn daxil edin.")
 
-# Rejim 3: Kod Analizi (Code Explainer)
 elif app_mode == ui['modes'][2]:
     st.subheader(ui['modes'][2])
-    code_snippet = st.text_area("Təhlil olunacaq kod parçasını daxil edin:", height=180)
+    code_snippet = st.text_area("Kod parçasını daxil edin:", height=180)
     if st.button(ui['code_btn'], use_container_width=True):
         if code_snippet:
-            with st.spinner("Kod öyrənilir və izah edilir..."):
-                try:
-                    response = client.chat.completions.create(
-                        model=PRIMARY_MODEL,
-                        messages=[
-                            {"role": "system", "content": "Sən senior proqramlaşdırma mütəxəssisisən. Kodları addım-addım, məntiqli və səlis şəkildə izah edirsən."},
-                            {"role": "user", "content": f"Bu kodu ətraflı şəkildə izah et və optimizasiya tövsiyələri ver: \n\n{code_snippet}"}
-                        ],
-                        temperature=0.3
-                    )
-                    st.success("Kodun Təhlili:")
-                    st.markdown(response.choices[0].message.content)
-                except Exception as e:
-                    st.error(f"Xəta: {e}")
+            with st.spinner("Təhlil edilir..."):
+                response = client.chat.completions.create(
+                    model=PRIMARY_MODEL,
+                    messages=[
+                        {"role": "system", "content": "Sən proqramlaşdırma mütəxəssisiyəm."},
+                        {"role": "user", "content": f"Bu kodu izah et: \n\n{code_snippet}"}
+                    ],
+                    temperature=0.3
+                )
+                st.success("İzah:")
+                st.markdown(response.choices[0].message.content)
         else:
-            st.warning("Zəhmət olmasa kod daxil edin.")
+            st.warning("Kod daxil edin.")
 
-# Rejim 4: Layihə Haqqında (About Project)
 elif app_mode == ui['modes'][3]:
     st.subheader(ui['modes'][3])
     st.markdown("""
-    * **Layihə Adı:** KENANO AI (Enterprise Edition)
-    * **Baş Tərtibatçı:** Kənan Əlizadə
-    * **İntellektual Mühərrik:** LLaMA-3.3-70B Versatile (Real-time Cloud Intelligence)
-    * **Dizayn Konsepsiyası:** Apple Human Interface Guidelines (Minimalist Dark Mode & Smooth Animations)
-    * **Dəstəklənən Dillər:** Azərbaycan, English, Русский
-    * **Status:** Tam Aktiv, Sabit və Müstəqil Sistem
+    * **Layihə Adı:** KENANO AI
+    * **Tərtibatçı:** Kənan Əlizadə
+    * **Mühərrik:** OpenAI/GPT-OSS Model
+    * **Status:** Stabil və Aktiv
     """)
+                
