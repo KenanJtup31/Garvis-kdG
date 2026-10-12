@@ -101,30 +101,58 @@ translations = {
     }
 }
 
-# --- 4. SESSİYA VƏ TARİXÇƏ (CHATS STATE) ---
+# --- 4. API BAĞLANTISI ---
+GROQ_API_KEY = "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"
+
+try:
+    client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    st.error(f"Xəta: {e}")
+
+# --- 5. AĞILLI BAŞLIQ GENERATORU (MÖVZUYA UYGUN AD QOYMAQ ÜÇÜN) ---
+def generate_chat_title(first_message):
+    try:
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": "Verilən mesaja uyğun 2-4 sözdən ibarət qısa, dəqiq və səliqəli başlıq adı yarat. Yalnız başlığı yaz, dırnaq işarəsi və ya başqa simvol istifadə etmə."},
+                {"role": "user", "content": first_message}
+            ],
+            temperature=0.3
+        )
+        title = response.choices[0].message.content.strip()
+        return title[:30] # Çox uzun olmasın
+    except:
+        return first_message[:20] + "..."
+
+# --- 6. SESSİYA VƏ TARİXÇƏ (CHATS STATE) ---
 if "chats" not in st.session_state:
     st.session_state.chats = {"Yeni Söhbət": []}
 if "current_chat" not in st.session_state:
     st.session_state.current_chat = "Yeni Söhbət"
 
-# --- 5. SIDEBAR (TARİXÇƏ VƏ TƏNZİMLƏMƏLƏR) ---
+# --- 7. SIDEBAR (TARİXÇƏ VƏ TƏNZİMLƏMƏLƏR) ---
 with st.sidebar:
     lang_choice = st.selectbox("Dil / Language / Язык", ["Azərbaycan", "English", "Русский"])
     ui = translations[lang_choice]
     
     st.divider()
     
-    # Yeni söhbət düyməsi (Gemini tərzi)
+    # Yeni söhbət düyməsi
     if st.button(ui['new_chat'], use_container_width=True):
-        new_chat_name = f"Söhbət {len(st.session_state.chats) + 1}"
-        st.session_state.chats[new_chat_name] = []
-        st.session_state.current_chat = new_chat_name
+        # Təkrarlanmayan müvəqqəti ad veririk
+        temp_name = f"Yeni Söhbət {len(st.session_state.chats) + 1}"
+        st.session_state.chats[temp_name] = []
+        st.session_state.current_chat = temp_name
         st.rerun()
         
     st.markdown(f"**{ui['history_title']}**")
     
     # Tarixçədəki söhbətlərin siyahısı
     chat_names = list(st.session_state.chats.keys())
+    if st.session_state.current_chat not in chat_names:
+        st.session_state.current_chat = chat_names[0]
+        
     selected_chat = st.radio("Söhbətlər", chat_names, label_visibility="collapsed", index=chat_names.index(st.session_state.current_chat))
     
     if selected_chat != st.session_state.current_chat:
@@ -138,15 +166,7 @@ with st.sidebar:
     st.divider()
     st.caption(ui['creator_info'])
 
-# --- 6. API BAĞLANTISI ---
-GROQ_API_KEY = "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"
-
-try:
-    client = Groq(api_key=GROQ_API_KEY)
-except Exception as e:
-    st.error(f"Xəta: {e}")
-
-# --- 7. MODERN HEADER ---
+# --- 8. MODERN HEADER ---
 current_year = datetime.now().year
 st.markdown(f"""
     <div class="modern-header">
@@ -160,7 +180,7 @@ st.markdown("<hr style='border: 0.5px solid #222225; margin-bottom: 20px;'>", un
 # Cari söhbətin mesajları
 current_messages = st.session_state.chats[st.session_state.current_chat]
 
-# --- 8. REJİMLƏR ---
+# --- 9. REJİMLƏR ---
 if app_mode == ui['modes'][0]:
     # Əgər söhbət boşdursa sistem təlimatı əlavə et
     if not current_messages:
@@ -177,14 +197,16 @@ if app_mode == ui['modes'][0]:
     if prompt := st.chat_input(ui['input_placeholder']):
         current_messages.append({"role": "user", "content": prompt})
         
-        # Əgər bu ilk mesajdırsa, söhbətin adını həmin mesaja uyğun dəyiş
-        if st.session_state.current_chat.startswith("Söhbət") and len(current_messages) <= 3:
-            new_title = (prompt[:25] + '..') if len(prompt) > 25 else prompt
-            st.session_state.chats[new_title] = current_messages
+        # Əgər bu ilk istifadəçi mesajıdırsa, AI avtomatik Gemini kimi söhbətə mövzu adı qoyacaq:
+        user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
+        if user_msg_count == 1:
+            ai_title = generate_chat_title(prompt)
+            st.session_state.chats[ai_title] = current_messages
             del st.session_state.chats[st.session_state.current_chat]
-            st.session_state.current_chat = new_title
-            current_messages = st.session_state.chats[new_title]
-            
+            st.session_state.current_chat = ai_title
+            current_messages = st.session_state.chats[ai_title]
+            st.rerun()
+
         with st.chat_message("user"): 
             st.markdown(prompt)
         
@@ -249,4 +271,3 @@ elif app_mode == ui['modes'][3]:
     * **Müəllif:** Kənan Əlizadə
     * **Status:** Aktiv & Stabil
     """)
-    
