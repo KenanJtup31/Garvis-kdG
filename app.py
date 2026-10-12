@@ -6,7 +6,6 @@
 import streamlit as st
 from groq import Groq
 from datetime import datetime
-import time
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
@@ -143,7 +142,6 @@ try:
 except Exception as e:
     st.error(f"Kritik API Bağlantı Xətası: {e}")
 
-# Stabil və işlək model
 PRIMARY_MODEL = "openai/gpt-oss-20b"
 
 # --- 5. DİNAMİK BAŞLIQ GENERATORU ---
@@ -188,11 +186,13 @@ with st.sidebar:
     if st.session_state.current_chat not in chat_names:
         st.session_state.current_chat = chat_names[0]
         
+    current_index = chat_names.index(st.session_state.current_chat) if st.session_state.current_chat in chat_names else 0
+    
     selected_chat = st.radio(
         "Tarixçə Naviqasiyası", 
         chat_names, 
         label_visibility="collapsed", 
-        index=chat_names.index(st.session_state.current_chat)
+        index=current_index
     )
     
     if selected_chat != st.session_state.current_chat:
@@ -216,6 +216,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("<hr style='border: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 25px;'>", unsafe_allow_html=True)
+
+if st.session_state.current_chat not in st.session_state.chats:
+    st.session_state.current_chat = list(st.session_state.chats.keys())[0]
 
 current_messages = st.session_state.chats[st.session_state.current_chat]
 
@@ -267,9 +270,12 @@ if app_mode == ui['modes'][0]:
         user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
         if user_msg_count == 1:
             new_title = generate_chat_title(prompt)
+            if new_title in st.session_state.chats:
+                new_title = f"{new_title} ({len(st.session_state.chats)})"
             st.session_state.chats[new_title] = current_messages
             del st.session_state.chats[st.session_state.current_chat]
             st.session_state.current_chat = new_title
+            st.rerun()
 
 elif app_mode == ui['modes'][1]:
     st.subheader(ui['modes'][1])
@@ -317,4 +323,4 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
-                
+    
