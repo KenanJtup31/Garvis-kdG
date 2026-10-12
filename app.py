@@ -4,13 +4,13 @@ from datetime import datetime
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
-    page_title="KENANO", 
+    page_title="KENANO AI", 
     page_icon="⚡", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. MODERN VƏ SADƏ DİZAYN (CSS) ---
+# --- 2. MODERN DİZAYN VƏ ANIMASIYALAR (CSS) ---
 st.markdown("""
     <style>
         /* Tünd minimalist fon */
@@ -22,42 +22,50 @@ st.markdown("""
         
         /* Sidebar tənzimləməsi */
         [data-testid="stSidebar"] {
-            background-color: #0f0f11;
+            background-color: #0b0b0d;
             border-right: 1px solid #1f1f23;
         }
         [data-testid="stSidebar"] * {
             color: #e5e5e7 !important;
         }
         
+        /* Mesajların açılma animasiyası (Fade In) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stChatMessage {
+            background-color: #161618;
+            border-radius: 14px;
+            border: 1px solid #26262a;
+            animation: fadeIn 0.4s ease-out;
+            margin-bottom: 12px;
+        }
+        
         /* Sadə və müasir başlıq */
         .modern-header {
             text-align: center;
-            padding: 20px 0 10px 0;
+            padding: 15px 0 5px 0;
         }
         .modern-title {
             color: #ffffff;
             font-size: 24px;
             font-weight: 500;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .modern-copyright {
             color: #6e6e73;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.5px;
-        }
-        
-        /* Mesaj qutuları */
-        .stChatMessage {
-            background-color: #161618;
-            border-radius: 12px;
-            border: 1px solid #26262a;
         }
         
         /* Chat input */
         div[data-testid="stChatInput"] input {
             background-color: #161618 !important;
             color: #ffffff !important;
+            border-radius: 12px !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -65,8 +73,8 @@ st.markdown("""
 # --- 3. ÇOXDİLLİ LÜĞƏT ---
 translations = {
     "Azərbaycan": {
-        "sidebar_control": "Tənzimləmələr",
-        "lang_label": "Dil",
+        "new_chat": "+ Yeni Söhbət",
+        "history_title": "Son Söhbətlər",
         "mode_label": "Rejim",
         "modes": ["Söhbət", "Xülasə", "Kod Analizi", "Haqqında"],
         "temp_label": "Temperatur",
@@ -74,8 +82,8 @@ translations = {
         "creator_info": "Kənan Əlizadə tərəfindən hazırlanmışdır."
     },
     "English": {
-        "sidebar_control": "Settings",
-        "lang_label": "Language",
+        "new_chat": "+ New Chat",
+        "history_title": "Recent Chats",
         "mode_label": "Mode",
         "modes": ["Chat", "Summary", "Code Analysis", "About"],
         "temp_label": "Temperature",
@@ -83,8 +91,8 @@ translations = {
         "creator_info": "Developed by Kenan Alizade."
     },
     "Русский": {
-        "sidebar_control": "Настройки",
-        "lang_label": "Язык",
+        "new_chat": "+ Новый чат",
+        "history_title": "Недавние чаты",
         "mode_label": "Режим",
         "modes": ["Чат", "Резюме", "Анализ кода", "О программе"],
         "temp_label": "Температура",
@@ -93,11 +101,36 @@ translations = {
     }
 }
 
-# --- 4. SIDEBAR ---
+# --- 4. SESSİYA VƏ TARİXÇƏ (CHATS STATE) ---
+if "chats" not in st.session_state:
+    st.session_state.chats = {"Yeni Söhbət": []}
+if "current_chat" not in st.session_state:
+    st.session_state.current_chat = "Yeni Söhbət"
+
+# --- 5. SIDEBAR (TARİXÇƏ VƏ TƏNZİMLƏMƏLƏR) ---
 with st.sidebar:
     lang_choice = st.selectbox("Dil / Language / Язык", ["Azərbaycan", "English", "Русский"])
     ui = translations[lang_choice]
     
+    st.divider()
+    
+    # Yeni söhbət düyməsi (Gemini tərzi)
+    if st.button(ui['new_chat'], use_container_width=True):
+        new_chat_name = f"Söhbət {len(st.session_state.chats) + 1}"
+        st.session_state.chats[new_chat_name] = []
+        st.session_state.current_chat = new_chat_name
+        st.rerun()
+        
+    st.markdown(f"**{ui['history_title']}**")
+    
+    # Tarixçədəki söhbətlərin siyahısı
+    chat_names = list(st.session_state.chats.keys())
+    selected_chat = st.radio("Söhbətlər", chat_names, label_visibility="collapsed", index=chat_names.index(st.session_state.current_chat))
+    
+    if selected_chat != st.session_state.current_chat:
+        st.session_state.current_chat = selected_chat
+        st.rerun()
+        
     st.divider()
     app_mode = st.radio(ui['mode_label'], ui['modes'])
     temp = st.slider(ui['temp_label'], 0.0, 1.0, 0.7)
@@ -105,7 +138,7 @@ with st.sidebar:
     st.divider()
     st.caption(ui['creator_info'])
 
-# --- 5. API BAĞLANTISI ---
+# --- 6. API BAĞLANTISI ---
 GROQ_API_KEY = "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"
 
 try:
@@ -113,13 +146,7 @@ try:
 except Exception as e:
     st.error(f"Xəta: {e}")
 
-if "messages" not in st.session_state: 
-    st.session_state.messages = [{
-        "role": "system", 
-        "content": "Sənin adın KENANO-dur. Yaradıcın Kənan Əlizadədir. Qısa, səliqəli və sadə cavablar ver."
-    }]
-
-# --- 6. MODERN VƏ SADƏ HEADER ---
+# --- 7. MODERN HEADER ---
 current_year = datetime.now().year
 st.markdown(f"""
     <div class="modern-header">
@@ -128,17 +155,36 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<hr style='border: 0.5px solid #222225; margin-bottom: 25px;'>", unsafe_allow_html=True)
+st.markdown("<hr style='border: 0.5px solid #222225; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
-# --- 7. REJİMLƏR ---
+# Cari söhbətin mesajları
+current_messages = st.session_state.chats[st.session_state.current_chat]
+
+# --- 8. REJİMLƏR ---
 if app_mode == ui['modes'][0]:
-    for message in st.session_state.messages:
+    # Əgər söhbət boşdursa sistem təlimatı əlavə et
+    if not current_messages:
+        current_messages.append({
+            "role": "system", 
+            "content": "Sənin adın KENANO-dur. Yaradıcın Kənan Əlizadədir. Qısa, səliqəli və sadə cavablar ver."
+        })
+
+    for message in current_messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
     if prompt := st.chat_input(ui['input_placeholder']):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        current_messages.append({"role": "user", "content": prompt})
+        
+        # Əgər bu ilk mesajdırsa, söhbətin adını həmin mesaja uyğun dəyiş
+        if st.session_state.current_chat.startswith("Söhbət") and len(current_messages) <= 3:
+            new_title = (prompt[:25] + '..') if len(prompt) > 25 else prompt
+            st.session_state.chats[new_title] = current_messages
+            del st.session_state.chats[st.session_state.current_chat]
+            st.session_state.current_chat = new_title
+            current_messages = st.session_state.chats[new_title]
+            
         with st.chat_message("user"): 
             st.markdown(prompt)
         
@@ -148,7 +194,7 @@ if app_mode == ui['modes'][0]:
             try:
                 stream = client.chat.completions.create(
                     model="openai/gpt-oss-20b",
-                    messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                    messages=[{"role": m["role"], "content": m["content"]} for m in current_messages],
                     stream=True,
                     temperature=temp
                 )
@@ -160,7 +206,7 @@ if app_mode == ui['modes'][0]:
             except Exception as e:
                 message_placeholder.markdown(f"Xəta: {e}")
                 
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            current_messages.append({"role": "assistant", "content": full_response})
 
 elif app_mode == ui['modes'][1]:
     st.subheader(ui['modes'][1])
@@ -203,4 +249,4 @@ elif app_mode == ui['modes'][3]:
     * **Müəllif:** Kənan Əlizadə
     * **Status:** Aktiv & Stabil
     """)
-            
+    
