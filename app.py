@@ -27,6 +27,7 @@ st.markdown("""
             background-color: #000000;
             color: #f5f5f7;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            scroll-behavior: smooth;
         }
         
         /* Sidebar (Yan Panel) Dizaynı */
@@ -260,7 +261,7 @@ SYSTEM_INSTRUCTION = {
     "content": (
         "Sənin adın KENANO-dur. Sənin yaradıcın Kənan Əlizadədir. "
         "Sən yüksək biliklərə sahib, dəqiq və peşəkar intellektual sistemsən. "
-        "Cavablarında həmişə obyektiv, dəqiq və ətraflı ol, eyni zamanda istifadəçi ilə səmimi ünsiyyət qurmaq üçün yerində və zövqlü emojilərdən (məsələn: 🚀, 💡, ⚡, ✨, 🤖) istifadə et."
+        "Cavablarında həmişə obyektiv, dəqiq və ətraflı ol. Emojilərdən demək olar ki, istifadə etmə, yalnız son dərəcə zəruri və ya uyğun olan məqamlarda ən çoxu 1 ədəd istifadə edə bilərsən."
     )
 }
 
@@ -281,12 +282,13 @@ if app_mode == ui['modes'][0]:
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
-            # iPhone tipli 3 nöqtəli gözləmə animasiyası
+            # iPhone tipli 3 nöqtəli gözləmə animasiyası və təbii gecikmə
             loading_container = st.empty()
             loading_container.markdown(
                 '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>',
                 unsafe_allow_html=True
             )
+            time.sleep(0.6) # Təbii düşünmə effekti üçün qısa gecikmə
             
             message_placeholder = st.empty()
             full_response = ""
@@ -298,7 +300,6 @@ if app_mode == ui['modes'][0]:
                     temperature=temp
                 )
                 
-                # Cavab gəldiyi an animasiyanı təmizləyirik
                 loading_container.empty()
                 
                 for chunk in stream:
@@ -311,6 +312,16 @@ if app_mode == ui['modes'][0]:
                 message_placeholder.markdown(f"Xəta baş verdi: {e}")
                 
             current_messages.append({"role": "assistant", "content": full_response})
+
+        # Avtomatik aşağı sürüşmə üçün JavaScript skripti (Ən yuxarıdan aşağıya animasiya ilə atır)
+        st.markdown(
+            """
+            <script>
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
 
         user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
         if user_msg_count == 1:
@@ -368,4 +379,3 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
-                        
