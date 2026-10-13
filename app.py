@@ -6,6 +6,7 @@
 import streamlit as st
 from groq import Groq
 from datetime import datetime
+import urllib.parse
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
@@ -15,11 +16,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
 # --- 2. PREMIUM CSS ANIMASIYALAR VƏ İOS DİZAYN ---
-
 st.markdown("""
-
 <style>
         /* Ümumi Tünd Minimalist Fon */
         .stApp {
@@ -106,34 +104,37 @@ translations = {
         "new_chat": "+ Yeni Söhbət",
         "history_title": "Son Söhbətlər",
         "mode_label": "İş Rejimi",
-        "modes": ["Söhbət", "Xülasə", "Kod Analizi", "Haqqında"],
+        "modes": ["Söhbət", "Xülasə", "Kod Analizi", "Şəkil Yaratma", "Haqqında"],
         "temp_label": "Yaradıcılıq Əmsalı",
         "input_placeholder": "Mesajınızı daxil edin...",
         "creator_info": "Bu layihə Kənan Əlizadə tərəfindən hazırlanmışdır.",
         "summary_btn": "Mətni Xülasə Et",
-        "code_btn": "Kodu Təhlil Et"
+        "code_btn": "Kodu Təhlil Et",
+        "img_btn": "🎨 Şəkil Yarat"
     },
     "English": {
         "new_chat": "+ New Chat",
         "history_title": "Recent Chats",
         "mode_label": "Operation Mode",
-        "modes": ["Chat", "Summary", "Code Analysis", "About"],
+        "modes": ["Chat", "Summary", "Code Analysis", "Image Generation", "About"],
         "temp_label": "Creativity Level",
         "input_placeholder": "Type your message here...",
         "creator_info": "This project was developed by Kenan Alizade.",
         "summary_btn": "Summarize Text",
-        "code_btn": "Analyze Code"
+        "code_btn": "Analyze Code",
+        "img_btn": "🎨 Generate Image"
     },
     "Русский": {
         "new_chat": "+ Новый чат",
         "history_title": "Недавние чаты",
         "mode_label": "Режим работы",
-        "modes": ["Чат", "Резюме", "Анализ кода", "О программе"],
+        "modes": ["Чат", "Резюме", "Анализ кода", "Генерация изображений", "О программе"],
         "temp_label": "Уровень творчества",
         "input_placeholder": "Введите сообщение...",
         "creator_info": "Проект разработан Кянаном Ализаде.",
         "summary_btn": "Сделать резюме",
-        "code_btn": "Анализировать код"
+        "code_btn": "Анализировать код",
+        "img_btn": "🎨 Создать изображение"
     }
 }
 
@@ -207,6 +208,13 @@ with st.sidebar:
     temp = st.slider(ui['temp_label'], 0.0, 1.0, 0.7)
     
     st.divider()
+    
+    # 📸 + İkonlu Kamera / Qalereya Mediya Yükləmə Bölməsi (Sidebar-ın Altında)
+    uploaded_file = st.file_uploader("➕ Kamera / Qalereya", type=["png", "jpg", "jpeg", "webp"])
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Yüklənmiş Şəkil", use_column_width=True)
+    
+    st.divider()
     st.caption(ui['creator_info'])
 
 # --- 8. ANA EKRAN HEADER ---
@@ -235,7 +243,7 @@ SYSTEM_INSTRUCTION = {
 }
 
 # --- 9. REJİMLƏR ---
-if app_mode == ui['modes'][0]:
+if app_mode == ui['modes'][0]:  # Söhbət Rejimi
     if not current_messages:
         current_messages.append(SYSTEM_INSTRUCTION)
 
@@ -280,7 +288,7 @@ if app_mode == ui['modes'][0]:
             st.session_state.current_chat = new_title
             st.rerun()
 
-elif app_mode == ui['modes'][1]:
+elif app_mode == ui['modes'][1]:  # Xülasə
     st.subheader(ui['modes'][1])
     text_to_summarize = st.text_area("Xülasə olunacaq mətni daxil edin:", height=180)
     if st.button(ui['summary_btn'], use_container_width=True):
@@ -299,7 +307,7 @@ elif app_mode == ui['modes'][1]:
         else:
             st.warning("Mətn daxil edin.")
 
-elif app_mode == ui['modes'][2]:
+elif app_mode == ui['modes'][2]:  # Kod Analizi
     st.subheader(ui['modes'][2])
     code_snippet = st.text_area("Kod parçasını daxil edin:", height=180)
     if st.button(ui['code_btn'], use_container_width=True):
@@ -318,12 +326,31 @@ elif app_mode == ui['modes'][2]:
         else:
             st.warning("Kod daxil edin.")
 
-elif app_mode == ui['modes'][3]:
-    st.subheader(ui['modes'][3])
+elif app_mode == ui['modes'][3]:  # 🎨 Şəkil Yaratma Rejimi
+    st.subheader("🎨 KENANO AI — Şəkil Yaratma Mühərriki")
+    img_prompt = st.text_area("Yaratmaq istədiyiniz şəklin təsvirini daxil edin (Prompt):", height=120, placeholder="Məsələn: Neon işıqlı gələcək şəhər, 8k resolution, photorealistic...")
+    
+    if st.button(ui['img_btn'], use_container_width=True):
+        if img_prompt:
+            with st.spinner("Şəkil yaradılır... Lütfən gözləyin..."):
+                try:
+                    # Pollinations AI Ultra-Fast Engine
+                    encoded_prompt = urllib.parse.quote(img_prompt)
+                    image_url = f"https://pollinations.ai/p/{encoded_prompt}?width=1024&height=1024&seed=42&model=flux"
+                    
+                    st.image(image_url, caption=f"İstək: {img_prompt}", use_column_width=True)
+                    st.success("Şəkil uğurla yaradıldı!")
+                except Exception as e:
+                    st.error(f"Şəkil yaradılarkən xəta baş verdi: {e}")
+        else:
+            st.warning("Zəhmət olmasa təsvir daxil edin.")
+
+elif app_mode == ui['modes'][4]:  # Haqqında
+    st.subheader(ui['modes'][4])
     st.markdown("""
     * **Layihə Adı:** KENANO AI
     * **Tərtibatçı:** Kənan Əlizadə
-    * **Mühərrik:** OpenAI/GPT-OSS Model
+    * **Mühərrik:** OpenAI/GPT-OSS Model & FLUX Image Gen
     * **Status:** Stabil və Aktiv
     """)
     
