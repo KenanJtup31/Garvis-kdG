@@ -1,4 +1,3 @@
-Aha indi bax gövdə əsas kodumuz budur:
 
 # ==============================================================================
 # LAYIHƏ ADI: KENANO AI | ENTERPRISE EDITION
@@ -328,5 +327,3 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
-    
-İndi bu kodu dəyişmədən, öz öncəliklərimizi qoruyaraq, şəkil yaratma funksiyasını əlavə et,sol altda + işarəsi olsun ora basanda kamera və ya galereya seçimi gəlsin qalanını özn bilirsən, bunu yadda saxla əgər alınmırsa digər kod və funksiyalara toxunma
