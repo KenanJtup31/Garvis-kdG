@@ -17,22 +17,7 @@ st.set_page_config(
 
 
 # --- 2. PREMIUM CSS ANIMASIYALAR VƏ İOS DİZAYN ---
-# --- HTML VƏ PWA LOGO TƏNZİMLƏMƏSİ (HAMIDA EYNİ LOGO) ---
-st.markdown("""
-    <head>
-        <!-- Standard Favicon -->
-        <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/KenanJtup31/Garvis-kdG/main/Logo.png">
-        
-        <!-- Apple iOS (iPhone) Ana Ekran İkonu -->
-        <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/KenanJtup31/Garvis-kdG/main/Logo.png">
-        
-        <!-- Android / Chrome Ana Ekran İkonu -->
-        <link rel="shortcut icon" href="https://raw.githubusercontent.com/KenanJtup31/Garvis-kdG/main/Logo.png">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-title" content="KENANO AI">
-    </head>
-""", unsafe_allow_html=True)
+
 st.markdown("""
 
 <style>
