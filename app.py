@@ -148,7 +148,7 @@ except Exception as e:
     st.error(f"Kritik API Bağlantı Xətası: {e}")
 
 PRIMARY_MODEL = "openai/gpt-oss-20b"
-VISION_MODEL = "llama-3.2-11b-vision-preview"
+VISION_MODEL = "openai/gpt-oss-120b"
 
 # --- 5. DİNAMİK BAŞLIQ GENERATORU ---
 def generate_chat_title(first_message):
@@ -242,23 +242,24 @@ if app_mode == ui['modes'][0]:  # Söhbət Rejimi
     if not current_messages:
         current_messages.append(SYSTEM_INSTRUCTION)
 
-    # Əvvəlki mesajları göstər
     for message in current_messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # Mesaj qutusunun dərhal üstünə yerləşdirilən səliqəli Kamera/Qalereya fayl yükləyicisi
-    uploaded_file = st.file_uploader("📷 Kamera / Qalereyadan şəkil əlavə et", type=["png", "jpg", "jpeg", "webp"], key="chat_uploader")
+    # ➕ Düyməsi: Söhbət input sahəsinin soluna səliqəli yerləşdirilmiş sütun strukturu
+    col_upload, col_input = st.columns([1, 8])
     
+    with col_upload:
+        uploaded_file = st.file_uploader("➕", type=["png", "jpg", "jpeg", "webp"], label_visibility="collapsed", key="chat_uploader")
+        
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Əlavə edilmiş Şəkil", width=250)
+        st.image(uploaded_file, caption="Əlavə edilmiş Şəkil", width=220)
 
     if prompt := st.chat_input(ui['input_placeholder']):
         with st.chat_message("user"): 
             st.markdown(prompt)
 
-        # Əgər şəkil yüklənilibsə, Vision modelindən istifadə et
         if uploaded_file is not None:
             bytes_data = uploaded_file.getvalue()
             base64_image = base64.b64encode(bytes_data).decode('utf-8')
@@ -296,7 +297,6 @@ if app_mode == ui['modes'][0]:  # Söhbət Rejimi
                     
                 current_messages.append({"role": "assistant", "content": full_response})
         else:
-            # Sırf mətn əsaslı sorğu
             current_messages.append({"role": "user", "content": prompt})
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
@@ -388,7 +388,6 @@ elif app_mode == ui['modes'][4]:  # Haqqında
     st.markdown("""
     * **Layihə Adı:** KENANO AI
     * **Tərtibatçı:** Kənan Əlizadə
-    * **Mühərrik:** OpenAI/GPT-OSS Model & Llama 3.2 Vision
+    * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
-                    
