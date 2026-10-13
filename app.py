@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 
-# --- 2. PREMIUM CSS ANIMASIYALAR VƏ İOS DİZAYN ---
+# --- 2. PREMIUM CSS ANIMASIYALAR VƏ İPHONE CHAT INPUT DİZAYNI ---
 
 st.markdown("""
 
@@ -90,6 +90,28 @@ st.markdown("""
             40% { transform: scale(1.0); }
         }
         
+        /* iPhone Tipli Hamar və Şüşə Effekti Verən Chat Input Dizaynı */
+        div[data-testid="stChatInput"] {
+            padding-bottom: 10px;
+        }
+        div[data-testid="stChatInput"] input {
+            background-color: rgba(28, 28, 30, 0.85) !important;
+            color: #ffffff !important;
+            border-radius: 22px !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            padding: 14px 18px !important;
+            font-size: 15px !important;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        div[data-testid="stChatInput"] input:focus {
+            border-color: rgba(0, 122, 255, 0.6) !important;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+            background-color: rgba(35, 35, 38, 0.95) !important;
+        }
+        
         /* Müasir Başlıq Bölməsi */
         .modern-header {
             text-align: center;
@@ -107,14 +129,6 @@ st.markdown("""
             font-size: 11px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-        }
-        
-        /* Səliqəli Input Sahəsi */
-        div[data-testid="stChatInput"] input {
-            background-color: #1c1c1e !important;
-            color: #ffffff !important;
-            border-radius: 14px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         
         /* Düymə Dizaynları */
@@ -284,13 +298,13 @@ if app_mode == ui['modes'][0]:
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
-            # iPhone tipli 3 nöqtəli gözləmə animasiyası və daha təbii düşünmə fasiləsi
+            # iPhone tipli 3 nöqtəli gözləmə animasiyası və təbii düşünmə fasiləsi
             loading_container = st.empty()
             loading_container.markdown(
                 '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>',
                 unsafe_allow_html=True
             )
-            time.sleep(0.9) # İnsan düşünməsinə yaxınlaşdırılmış zərif gecikmə
+            time.sleep(0.8) # İnsan düşünməsinə yaxınlaşdırılmış zərif gecikmə
             
             message_placeholder = st.empty()
             full_response = ""
@@ -304,7 +318,7 @@ if app_mode == ui['modes'][0]:
                 
                 loading_container.empty()
                 
-                # Sürətli yox, zərif axıcı animasiya effekti ilə simvol simvol və ya yavaş gəliş
+                # Fade-in + Type-in (Simvol-simvol axıcı gəliş effekti)
                 for chunk in stream:
                     if chunk.choices[0].delta.content:
                         full_response += chunk.choices[0].delta.content
@@ -382,4 +396,4 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
-                
+    
