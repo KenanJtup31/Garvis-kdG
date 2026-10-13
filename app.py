@@ -1,5 +1,5 @@
 # ==============================================================================
-# LAYIHƏ ADI: KENANO AI | ENTERPRISE EDITION
+# LAYIHƏ ADI: KENANO AI | ENTERPRISE ULTRA EDITION
 # MÜƏLLİF VƏ TƏRTİBATÇI: KƏNAN ƏLİZADƏ
 # ==============================================================================
 
@@ -17,84 +17,111 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. PREMIUM CSS ANIMASIYALAR VƏ İOS DİZAYN ---
+# --- 2. İPHONE TİPLİ PREMIUM IOS DİZAYN VƏ ANİMASİYALAR ---
 st.markdown("""
 <style>
-        /* Ümumi Tünd Minimalist Fon */
+        /* Ümumi Tünd Minimalist Fon & iOS Şriftləri */
         .stApp {
             background-color: #000000;
             color: #f5f5f7;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
         }
         
-        /* Sidebar (Yan Panel) Dizaynı */
+        /* Sidebar (Yan Panel) - Apple Glassmorphism */
         [data-testid="stSidebar"] {
-            background-color: #0b0b0d;
+            background-color: rgba(18, 18, 20, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
         [data-testid="stSidebar"] * {
             color: #f5f5f7 !important;
         }
         
-        /* Mesajların Açılma Animasiyası */
-        @keyframes messageAppear {
+        /* Mesajların iOS Tipli Sürüşmə və Fade-In Animasiyası */
+        @keyframes iosMessageAppear {
             0% {
                 opacity: 0;
-                transform: translateY(12px);
+                transform: translateY(16px) scale(0.98);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
         
         .stChatMessage {
-            background-color: #161618;
-            border-radius: 16px;
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            animation: messageAppear 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: iosMessageAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             margin-bottom: 16px;
-            padding: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         /* Müasir Başlıq Bölməsi */
         .modern-header {
             text-align: center;
-            padding: 20px 0 10px 0;
+            padding: 15px 0 5px 0;
         }
         .modern-title {
             color: #ffffff;
-            font-size: 24px;
-            font-weight: 500;
-            letter-spacing: 1px;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
             margin-bottom: 4px;
+            background: linear-gradient(135deg, #ffffff 0%, #a1a1a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .modern-copyright {
-            color: #6e6e73;
-            font-size: 11px;
-            letter-spacing: 0.5px;
+            color: #86868b;
+            font-size: 10px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
         }
         
-        /* Səliqəli Input Sahəsi */
+        /* Səliqəli iOS Stilli Input Sahəsi */
         div[data-testid="stChatInput"] input {
-            background-color: #1c1c1e !important;
+            background-color: rgba(28, 28, 30, 0.9) !important;
             color: #ffffff !important;
-            border-radius: 14px !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-        
-        /* Düymə Dizaynları */
-        .stButton button {
-            border-radius: 12px;
-            background-color: #2c2c2e;
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            padding: 12px 16px !important;
             transition: all 0.3s ease;
         }
+        div[data-testid="stChatInput"] input:focus {
+            border-color: rgba(0, 122, 255, 0.6) !important;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+        
+        /* Düymə Dizaynları - Apple Smooth Hover */
+        .stButton button {
+            border-radius: 14px;
+            background-color: rgba(44, 44, 46, 0.8);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 500;
+        }
         .stButton button:hover {
-            background-color: #3a3a3c;
-            border-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(58, 58, 60, 1);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        /* Kompakt Media Yükləmə Paneli */
+        .upload-bar {
+            background: rgba(22, 22, 24, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -216,12 +243,12 @@ with st.sidebar:
 current_year = datetime.now().year
 st.markdown(f"""
     <div class="modern-header">
-        <div class="modern-title">KENANO</div>
+        <div class="modern-title">KENANO AI</div>
         <div class="modern-copyright">© {current_year} KENAN ALIZADE. ALL RIGHTS RESERVED.</div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<hr style='border: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 25px;'>", unsafe_allow_html=True)
+st.markdown("<hr style='border: 0.5px solid rgba(255,255,255,0.08); margin-bottom: 20px;'>", unsafe_allow_html=True)
 
 if st.session_state.current_chat not in st.session_state.chats:
     st.session_state.current_chat = list(st.session_state.chats.keys())[0]
@@ -247,14 +274,11 @@ if app_mode == ui['modes'][0]:  # Söhbət Rejimi
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # ➕ Düyməsi: Söhbət input sahəsinin soluna səliqəli yerləşdirilmiş sütun strukturu
-    col_upload, col_input = st.columns([1, 8])
-    
-    with col_upload:
-        uploaded_file = st.file_uploader("➕", type=["png", "jpg", "jpeg", "webp"], label_visibility="collapsed", key="chat_uploader")
-        
-    if uploaded_file is not None:
-        st.image(uploaded_file, caption="Əlavə edilmiş Şəkil", width=220)
+    # ➕ Şəkil yükləmə düyməsi chat inputun üstündə kompakt və səliqəli şəkildə yerləşir
+    with st.container():
+        uploaded_file = st.file_uploader("📎 Şəkil əlavə et (+ Kamera / Qalereya)", type=["png", "jpg", "jpeg", "webp"], key="chat_uploader")
+        if uploaded_file is not None:
+            st.image(uploaded_file, caption="Seçilmiş Şəkil Önizləməsi", width=200)
 
     if prompt := st.chat_input(ui['input_placeholder']):
         with st.chat_message("user"): 
@@ -388,6 +412,6 @@ elif app_mode == ui['modes'][4]:  # Haqqında
     st.markdown("""
     * **Layihə Adı:** KENANO AI
     * **Tərtibatçı:** Kənan Əlizadə
-    * **Mühərrik:** OpenAI/GPT-OSS Model
-    * **Status:** Stabil və Aktiv
+    * **Mühərrik:** OpenAI/GPT-OSS Model & Vision Engine
+    * **Status:** Premium Enterprise Aktiv
     """)
