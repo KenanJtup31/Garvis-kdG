@@ -1,4 +1,3 @@
-
 # ==============================================================================
 # LAYIHƏ ADI: KENANO AI | ENTERPRISE EDITION
 # MÜƏLLİF VƏ TƏRTİBATÇI: KƏNAN ƏLİZADƏ
@@ -7,6 +6,7 @@
 import streamlit as st
 from groq import Groq
 from datetime import datetime
+import time
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
@@ -38,25 +38,54 @@ st.markdown("""
             color: #f5f5f7 !important;
         }
         
-        /* Mesajların Açılma Animasiyası (Fade In) */
+        /* Mesajların Açılma Animasiyası (Fade In & Scale) */
         @keyframes messageAppear {
             0% {
                 opacity: 0;
-                transform: translateY(12px);
+                transform: translateY(14px) scale(0.98);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
         
         .stChatMessage {
             background-color: #161618;
-            border-radius: 16px;
+            border-radius: 18px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            animation: messageAppear 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: messageAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             margin-bottom: 16px;
-            padding: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* iPhone Tipli 3 Nöqtə Yazılma Animasiyası */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 14px;
+            background: #161618;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 12px;
+        }
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #8e8e93;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
         }
         
         /* Müasir Başlıq Bölməsi */
@@ -231,7 +260,7 @@ SYSTEM_INSTRUCTION = {
     "content": (
         "Sənin adın KENANO-dur. Sənin yaradıcın Kənan Əlizadədir. "
         "Sən yüksək biliklərə sahib, dəqiq və peşəkar intellektual sistemsən. "
-        "Həmişə obyektiv, dəqiq və ətraflı cavablar ver."
+        "Cavablarında həmişə obyektiv, dəqiq və ətraflı ol, eyni zamanda istifadəçi ilə səmimi ünsiyyət qurmaq üçün yerində və zövqlü emojilərdən (məsələn: 🚀, 💡, ⚡, ✨, 🤖) istifadə et."
     )
 }
 
@@ -252,6 +281,13 @@ if app_mode == ui['modes'][0]:
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
+            # iPhone tipli 3 nöqtəli gözləmə animasiyası
+            loading_container = st.empty()
+            loading_container.markdown(
+                '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>',
+                unsafe_allow_html=True
+            )
+            
             message_placeholder = st.empty()
             full_response = ""
             try:
@@ -261,12 +297,17 @@ if app_mode == ui['modes'][0]:
                     stream=True,
                     temperature=temp
                 )
+                
+                # Cavab gəldiyi an animasiyanı təmizləyirik
+                loading_container.empty()
+                
                 for chunk in stream:
                     if chunk.choices[0].delta.content:
                         full_response += chunk.choices[0].delta.content
                         message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response)
             except Exception as e:
+                loading_container.empty()
                 message_placeholder.markdown(f"Xəta baş verdi: {e}")
                 
             current_messages.append({"role": "assistant", "content": full_response})
@@ -327,3 +368,4 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
+                        
