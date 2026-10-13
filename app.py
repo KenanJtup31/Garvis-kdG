@@ -7,6 +7,7 @@ import streamlit as st
 from groq import Groq
 from datetime import datetime
 import urllib.parse
+import base64
 
 # --- 1. SİSTEM VƏ SƏHİFƏ KONFİQURASİYASI ---
 st.set_page_config(
@@ -35,7 +36,7 @@ st.markdown("""
             color: #f5f5f7 !important;
         }
         
-        /* Mesajların Açılma Animasiyası (Fade In) */
+        /* Mesajların Açılma Animasiyası */
         @keyframes messageAppear {
             0% {
                 opacity: 0;
@@ -147,6 +148,7 @@ except Exception as e:
     st.error(f"Kritik API Bağlantı Xətası: {e}")
 
 PRIMARY_MODEL = "openai/gpt-oss-20b"
+VISION_MODEL = "llama-3.2-11b-vision-preview"
 
 # --- 5. DİNAMİK BAŞLIQ GENERATORU ---
 def generate_chat_title(first_message):
@@ -208,13 +210,6 @@ with st.sidebar:
     temp = st.slider(ui['temp_label'], 0.0, 1.0, 0.7)
     
     st.divider()
-    
-    # 📸 + İkonlu Kamera / Qalereya Mediya Yükləmə Bölməsi (Sidebar-ın Altında)
-    uploaded_file = st.file_uploader("➕ Kamera / Qalereya", type=["png", "jpg", "jpeg", "webp"])
-    if uploaded_file is not None:
-        st.image(uploaded_file, caption="Yüklənmiş Şəkil", use_column_width=True)
-    
-    st.divider()
     st.caption(ui['creator_info'])
 
 # --- 8. ANA EKRAN HEADER ---
@@ -247,36 +242,81 @@ if app_mode == ui['modes'][0]:  # Söhbət Rejimi
     if not current_messages:
         current_messages.append(SYSTEM_INSTRUCTION)
 
+    # Əvvəlki mesajları göstər
     for message in current_messages:
         if message["role"] != "system":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
+    # Mesaj qutusunun dərhal üstünə yerləşdirilən səliqəli Kamera/Qalereya fayl yükləyicisi
+    uploaded_file = st.file_uploader("📷 Kamera / Qalereyadan şəkil əlavə et", type=["png", "jpg", "jpeg", "webp"], key="chat_uploader")
+    
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Əlavə edilmiş Şəkil", width=250)
+
     if prompt := st.chat_input(ui['input_placeholder']):
-        current_messages.append({"role": "user", "content": prompt})
-        
         with st.chat_message("user"): 
             st.markdown(prompt)
-        
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = ""
-            try:
-                stream = client.chat.completions.create(
-                    model=PRIMARY_MODEL,
-                    messages=[{"role": m["role"], "content": m["content"]} for m in current_messages],
-                    stream=True,
-                    temperature=temp
-                )
-                for chunk in stream:
-                    if chunk.choices[0].delta.content:
-                        full_response += chunk.choices[0].delta.content
-                        message_placeholder.markdown(full_response + "▌")
-                message_placeholder.markdown(full_response)
-            except Exception as e:
-                message_placeholder.markdown(f"Xəta baş verdi: {e}")
-                
-            current_messages.append({"role": "assistant", "content": full_response})
+
+        # Əgər şəkil yüklənilibsə, Vision modelindən istifadə et
+        if uploaded_file is not None:
+            bytes_data = uploaded_file.getvalue()
+            base64_image = base64.b64encode(bytes_data).decode('utf-8')
+            
+            vision_messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            current_messages.append({"role": "user", "content": f"[Şəkil Yükləndi]: {prompt}"})
+            
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                try:
+                    response = client.chat.completions.create(
+                        model=VISION_MODEL,
+                        messages=vision_messages,
+                        temperature=temp
+                    )
+                    full_response = response.choices[0].message.content
+                    message_placeholder.markdown(full_response)
+                except Exception as e:
+                    full_response = f"Şəkil analizi xətası: {e}"
+                    message_placeholder.markdown(full_response)
+                    
+                current_messages.append({"role": "assistant", "content": full_response})
+        else:
+            # Sırf mətn əsaslı sorğu
+            current_messages.append({"role": "user", "content": prompt})
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                full_response = ""
+                try:
+                    stream = client.chat.completions.create(
+                        model=PRIMARY_MODEL,
+                        messages=[{"role": m["role"], "content": m["content"]} for m in current_messages],
+                        stream=True,
+                        temperature=temp
+                    )
+                    for chunk in stream:
+                        if chunk.choices[0].delta.content:
+                            full_response += chunk.choices[0].delta.content
+                            message_placeholder.markdown(full_response + "▌")
+                    message_placeholder.markdown(full_response)
+                except Exception as e:
+                    message_placeholder.markdown(f"Xəta baş verdi: {e}")
+                    
+                current_messages.append({"role": "assistant", "content": full_response})
 
         user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
         if user_msg_count == 1:
@@ -334,10 +374,8 @@ elif app_mode == ui['modes'][3]:  # 🎨 Şəkil Yaratma Rejimi
         if img_prompt:
             with st.spinner("Şəkil yaradılır... Lütfən gözləyin..."):
                 try:
-                    # Pollinations AI Ultra-Fast Engine
                     encoded_prompt = urllib.parse.quote(img_prompt)
                     image_url = f"https://pollinations.ai/p/{encoded_prompt}?width=1024&height=1024&seed=42&model=flux"
-                    
                     st.image(image_url, caption=f"İstək: {img_prompt}", use_column_width=True)
                     st.success("Şəkil uğurla yaradıldı!")
                 except Exception as e:
@@ -350,7 +388,7 @@ elif app_mode == ui['modes'][4]:  # Haqqında
     st.markdown("""
     * **Layihə Adı:** KENANO AI
     * **Tərtibatçı:** Kənan Əlizadə
-    * **Mühərrik:** OpenAI/GPT-OSS Model & FLUX Image Gen
+    * **Mühərrik:** OpenAI/GPT-OSS Model & Llama 3.2 Vision
     * **Status:** Stabil və Aktiv
     """)
-    
+                    
