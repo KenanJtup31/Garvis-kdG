@@ -39,11 +39,11 @@ st.markdown("""
             color: #f5f5f7 !important;
         }
         
-        /* Mesajların Açılma Animasiyası (Fade In & Scale) */
+        /* Mesajların Açılma Animasiyası (Fade In & Smooth Slide) */
         @keyframes messageAppear {
             0% {
                 opacity: 0;
-                transform: translateY(14px) scale(0.98);
+                transform: translateY(18px) scale(0.97);
             }
             100% {
                 opacity: 1;
@@ -55,10 +55,10 @@ st.markdown("""
             background-color: #161618;
             border-radius: 18px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            animation: messageAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: messageAppear 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             margin-bottom: 16px;
             padding: 18px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
@@ -68,11 +68,12 @@ st.markdown("""
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 8px 14px;
+            padding: 10px 16px;
             background: #161618;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 12px;
+            animation: messageAppear 0.3s ease-out forwards;
         }
         .typing-dot {
             width: 7px;
@@ -253,15 +254,16 @@ st.markdown("<hr style='border: 0.5px solid rgba(255,255,255,0.08); margin-botto
 
 if st.session_state.current_chat not in st.session_state.chats:
     st.session_state.current_chat = list(st.session_state.chats.keys())[0]
-
+    
 current_messages = st.session_state.chats[st.session_state.current_chat]
 
 SYSTEM_INSTRUCTION = {
     "role": "system", 
     "content": (
         "Sənin adın KENANO-dur. Sənin yaradıcın Kənan Əlizadədir. "
-        "Sən yüksək biliklərə sahib, dəqiq və peşəkar intellektual sistemsən. "
-        "Cavablarında həmişə obyektiv, dəqiq və ətraflı ol. Emojilərdən demək olar ki, istifadə etmə, yalnız son dərəcə zəruri və ya uyğun olan məqamlarda ən çoxu 1 ədəd istifadə edə bilərsən."
+        "Sən yüksək intellektə malik, peşəkar və etibarlı sistemsən. "
+        "Ünsiyyət tərzin balanslıdır: ehtiyac duyulduqda tam ciddi, işgüzar və dəqiq ol, bəzi yerlərdə isə səmimi, isti və dostyana yanaş. "
+        "Emojilərdən çox az, yalnız atmosferə uyğun gələn və yersiz görünməyən məqamlarda minimal səviyyədə istifadə et."
     )
 }
 
@@ -282,13 +284,13 @@ if app_mode == ui['modes'][0]:
             st.markdown(prompt)
         
         with st.chat_message("assistant"):
-            # iPhone tipli 3 nöqtəli gözləmə animasiyası və təbii gecikmə
+            # iPhone tipli 3 nöqtəli gözləmə animasiyası və daha təbii düşünmə fasiləsi
             loading_container = st.empty()
             loading_container.markdown(
                 '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>',
                 unsafe_allow_html=True
             )
-            time.sleep(0.6) # Təbii düşünmə effekti üçün qısa gecikmə
+            time.sleep(0.9) # İnsan düşünməsinə yaxınlaşdırılmış zərif gecikmə
             
             message_placeholder = st.empty()
             full_response = ""
@@ -302,6 +304,7 @@ if app_mode == ui['modes'][0]:
                 
                 loading_container.empty()
                 
+                # Sürətli yox, zərif axıcı animasiya effekti ilə simvol simvol və ya yavaş gəliş
                 for chunk in stream:
                     if chunk.choices[0].delta.content:
                         full_response += chunk.choices[0].delta.content
@@ -313,7 +316,7 @@ if app_mode == ui['modes'][0]:
                 
             current_messages.append({"role": "assistant", "content": full_response})
 
-        # Avtomatik aşağı sürüşmə üçün JavaScript skripti (Ən yuxarıdan aşağıya animasiya ilə atır)
+        # Avtomatik aşağıya (AI cavabına) yumşaq sürüşmə skripti
         st.markdown(
             """
             <script>
@@ -379,3 +382,4 @@ elif app_mode == ui['modes'][3]:
     * **Mühərrik:** OpenAI/GPT-OSS Model
     * **Status:** Stabil və Aktiv
     """)
+                
